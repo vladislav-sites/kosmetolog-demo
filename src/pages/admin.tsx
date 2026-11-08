@@ -111,21 +111,22 @@ function Cabinet() {
           <Link to="/" className="grid size-9 place-items-center rounded-full border border-border hover:bg-muted" aria-label="На сайт">
             <ArrowLeft className="size-4" />
           </Link>
-          <div className="leading-tight">
+          <div className="min-w-0 leading-tight">
             <p className="text-[0.7rem] text-muted-foreground">Кабинет</p>
-            <p className="font-heading text-[1.05rem]">{master.masterName}</p>
+            <p className="truncate font-heading text-[1.05rem]">{master.masterName}</p>
           </div>
           {master.demo && (
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto rounded-full text-muted-foreground"
+              aria-label="Сбросить демо-данные"
+              className="ml-auto shrink-0 rounded-full text-muted-foreground"
               onClick={() => {
                 actions.resetDemo()
                 toast.success("Демо-данные сброшены")
               }}
             >
-              <RotateCcw /> Сбросить демо
+              <RotateCcw /> <span className="hidden min-[400px]:inline">Сбросить демо</span>
             </Button>
           )}
         </div>
@@ -227,7 +228,7 @@ function DayTab() {
               )}
             >
               <span className="text-[0.65rem] uppercase">{format(d, "EEEEEE", { locale: ru })}</span>
-              <span className="font-heading text-xl leading-tight tabular-nums">{format(d, "d")}</span>
+              <span className="text-lg leading-tight font-semibold tabular-nums">{format(d, "d")}</span>
               <span className={cn("mt-0.5 size-1.5 rounded-full", n ? (active ? "bg-background" : "bg-clay") : "bg-transparent")} />
             </button>
           )
@@ -235,7 +236,7 @@ function DayTab() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-heading text-2xl first-letter:uppercase">{format(day, "d MMMM, EEEE", { locale: ru })}</h2>
+        <h2 className="text-xl font-semibold first-letter:uppercase">{format(day, "d MMMM, EEEE", { locale: ru })}</h2>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {wd.enabled ? (
             <>
@@ -278,7 +279,7 @@ function BookingCard({ b }: { b: Booking }) {
   return (
     <div className={cn("grid grid-cols-[4.5rem_1fr] gap-4 rounded-2xl border border-border bg-card p-4", b.status === "cancelled" && "opacity-60")}>
       <div className="border-r border-border pr-3">
-        <p className="font-heading text-xl tabular-nums">{format(start, "HH:mm")}</p>
+        <p className="text-lg font-semibold tabular-nums">{format(start, "HH:mm")}</p>
         <p className="text-xs text-muted-foreground tabular-nums">до {format(end, "HH:mm")}</p>
       </div>
       <div className="min-w-0">
@@ -334,7 +335,7 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint: strin
   return (
     <div className="rounded-2xl border border-border bg-card p-3 sm:p-4">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 font-heading text-[1.05rem] leading-tight whitespace-nowrap tabular-nums sm:text-2xl">{value}</p>
+      <p className="mt-1 text-[1.05rem] leading-tight font-semibold whitespace-nowrap tabular-nums sm:text-xl">{value}</p>
       <p className="text-[0.7rem] text-muted-foreground">{hint}</p>
     </div>
   )
@@ -423,7 +424,7 @@ function ServicesTab() {
                 <p className="font-medium">{svc.title}</p>
                 <p className="text-xs text-muted-foreground">{master.categories.find((c) => c.id === svc.categoryId)?.title}</p>
               </div>
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <label className="flex shrink-0 items-center gap-2 text-xs whitespace-nowrap text-muted-foreground">
                 {svc.active ? "на сайте" : "скрыта"}
                 <Switch checked={svc.active} onCheckedChange={(v) => actions.updateService(svc.id, { active: v })} />
               </label>
@@ -432,11 +433,13 @@ function ServicesTab() {
               <label className="space-y-1">
                 <span className="text-xs text-muted-foreground">Цена, ₽</span>
                 <Input
+                  key={svc.price}
                   type="number"
                   inputMode="numeric"
                   min={0}
                   step={100}
                   defaultValue={svc.price}
+                  onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
                   onBlur={(e) => {
                     const v = Math.max(0, Number(e.target.value) || 0)
                     if (v !== svc.price) {

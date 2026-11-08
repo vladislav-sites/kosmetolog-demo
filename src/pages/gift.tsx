@@ -28,21 +28,21 @@ export default function GiftPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 md:grid-cols-2 md:gap-16 md:py-16">
+    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 md:py-16 lg:grid-cols-2 lg:gap-16">
       {/* Превью сертификата */}
-      <div className="md:sticky md:top-24 md:self-start">
-        <div className="grain relative aspect-[1.6] w-full overflow-hidden rounded-3xl bg-primary p-6 text-primary-foreground shadow-2xl shadow-black/15 sm:p-8">
-          <div className="arch absolute -top-10 -right-8 h-56 w-40 opacity-50" />
-          <div className="relative flex h-full flex-col justify-between">
+      <div className="mx-auto w-full max-w-md lg:sticky lg:top-24 lg:max-w-none lg:self-start">
+        <div className="grain relative flex min-h-48 w-full flex-col overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground shadow-2xl shadow-black/15 sm:min-h-60 sm:p-8">
+          <div className="arch absolute -right-4 -bottom-24 h-52 w-32 opacity-35 sm:-bottom-20 sm:h-64 sm:w-44" />
+          <div className="relative flex flex-1 flex-col justify-between gap-5">
             <div className="flex items-center justify-between">
               <span className="text-[0.65rem] font-semibold tracking-[0.2em] uppercase opacity-70">Подарочный сертификат</span>
               <Gift className="size-5 opacity-70" />
             </div>
             <div>
-              <p className="font-heading text-5xl tabular-nums sm:text-6xl">{rub(amount)}</p>
+              <p className="text-[2.6rem] leading-none font-extralight tracking-tight whitespace-nowrap tabular-nums sm:text-6xl">{rub(amount)}</p>
               <p className="mt-2 text-sm opacity-80">{forName.trim() ? `для ${forName.trim()}` : "на любые процедуры"}</p>
             </div>
-            <div className="flex items-end justify-between text-xs opacity-80">
+            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 text-xs opacity-80">
               <span className="font-heading text-base">{master.brand}</span>
               <span>действует 6 месяцев</span>
             </div>

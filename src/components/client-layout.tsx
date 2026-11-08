@@ -25,10 +25,10 @@ export function ClientLayout() {
       {master.demo && demoOpen && (
         <div className="border-b border-border bg-card">
           <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <span className="hidden items-center gap-1.5 text-xs font-medium text-muted-foreground min-[360px]:flex">
               <Palette className="size-3.5" /> <span className="hidden sm:inline">Демо · оформление:</span>
             </span>
-            <ThemeSwitcher />
+            <ThemeSwitcher className="flex-nowrap gap-1.5 sm:gap-2" />
             <Link to="/admin" className="text-xs font-medium whitespace-nowrap underline underline-offset-4 hover:text-clay">
               Кабинет<span className="hidden sm:inline"> мастера</span> →
             </Link>
@@ -43,12 +43,12 @@ export function ClientLayout() {
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-3">
             <Monogram />
-            <span className="leading-tight">
+            <span className="leading-tight whitespace-nowrap">
               <span className="block font-heading text-[1.05rem]">{master.brand}</span>
               <span className="block text-[0.7rem] text-muted-foreground">{master.role}</span>
             </span>
           </Link>
-          <nav className="ml-auto hidden items-center gap-1 md:flex">
+          <nav className="ml-auto hidden items-center gap-1 lg:flex">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
@@ -62,7 +62,7 @@ export function ClientLayout() {
               </NavLink>
             ))}
           </nav>
-          <Button asChild className="ml-2 hidden h-10 rounded-full px-5 md:inline-flex">
+          <Button asChild className="ml-2 hidden h-10 rounded-full px-5 lg:inline-flex">
             <Link to="/book">Записаться</Link>
           </Button>
         </div>
@@ -72,7 +72,7 @@ export function ClientLayout() {
         <Outlet />
       </main>
 
-      <footer className={cn("border-t border-border bg-card/50 pb-28 md:pb-0", inBooking && "hidden md:block")}>
+      <footer className={cn("border-t border-border bg-card/50 pb-28 lg:pb-0", inBooking && "hidden lg:block")}>
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
@@ -133,7 +133,7 @@ export function ClientLayout() {
 
       {/* Нижняя навигация — как в приложении */}
       {!inBooking && (
-        <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/92 backdrop-blur-md md:hidden">
+        <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/92 backdrop-blur-md lg:hidden">
           <div className="mx-auto grid max-w-md grid-cols-5 items-end px-2 pt-2">
             {NAV.slice(0, 2).map((n) => (
               <TabLink key={n.to} {...n} />

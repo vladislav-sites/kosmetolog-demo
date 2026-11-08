@@ -32,8 +32,8 @@ export default function HomePage() {
   return (
     <>
       {/* ——— Первый экран ——— */}
-      <section className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-8 pb-16 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:gap-14 md:pt-16 md:pb-20">
-        <div>
+      <section className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-8 pb-16 sm:px-6 md:pt-16 md:pb-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+        <div className="min-w-0">
           <p className="eyebrow mb-5">
             {master.role} · {master.city}
           </p>
@@ -58,7 +58,7 @@ export default function HomePage() {
           </dl>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm md:max-w-none">
+        <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm lg:max-w-none">
           <div className="grain arch relative aspect-[4/5] w-full overflow-hidden">
             {master.portrait && <img src={master.portrait} alt={master.masterName} className="absolute inset-0 size-full object-cover" />}
             {!master.portrait && (
@@ -75,7 +75,7 @@ export default function HomePage() {
           {nextLabel && (
             <Link
               to={consult ? `/book?service=${consult.id}` : "/book"}
-              className="absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl border border-border bg-popover/95 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur transition-transform hover:-translate-y-0.5 md:-left-8 md:w-auto md:translate-x-0"
+              className="absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl border border-border bg-popover/95 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
             >
               <span className="relative flex size-2.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/60" />
@@ -176,7 +176,7 @@ function Fact({ value, label }: { value: string; label: string }) {
   return (
     <div>
       <dt className="sr-only">{label}</dt>
-      <dd className="font-heading text-2xl leading-none">{value}</dd>
+      <dd className="text-[1.35rem] leading-none font-light tracking-tight whitespace-nowrap tabular-nums">{value}</dd>
       <dd className="mt-1.5 text-xs text-muted-foreground">{label}</dd>
     </div>
   )

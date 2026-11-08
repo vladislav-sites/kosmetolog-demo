@@ -79,7 +79,7 @@ export default function BookPage() {
   const STEPS = ["Процедура", "Дата и время", "Контакты"]
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pt-6 pb-36 sm:px-6 md:pt-12 md:pb-20">
+    <div className="mx-auto max-w-2xl px-4 pt-6 pb-36 sm:px-6 md:pt-12 lg:pb-20">
       <div className="flex items-center gap-3">
         <button onClick={back} className="grid size-10 place-items-center rounded-full border border-border hover:bg-muted" aria-label="Назад">
           <ArrowLeft className="size-4" />
@@ -250,10 +250,10 @@ function SelectedService({ title, meta, onChange, changeLabel = "Изменит�
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-tint/70 px-4 py-3">
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium">{title}</span>
+        <span className="block leading-snug font-medium">{title}</span>
         <span className="block text-xs text-muted-foreground first-letter:uppercase">{meta}</span>
       </span>
-      <button onClick={onChange} className="shrink-0 text-sm font-medium underline underline-offset-4">
+      <button onClick={onChange} className="max-w-[7rem] shrink-0 text-right text-sm leading-snug font-medium underline underline-offset-4">
         {changeLabel}
       </button>
     </div>
@@ -288,7 +288,7 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 
 function BottomBar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/92 px-4 pt-3 backdrop-blur-md md:static md:mt-8 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+    <div className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/92 px-4 pt-3 backdrop-blur-md lg:static lg:mt-8 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
       <div className="mx-auto max-w-2xl">{children}</div>
     </div>
   )

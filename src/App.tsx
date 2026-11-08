@@ -14,7 +14,13 @@ import GiftPage from "@/pages/gift"
 import PrivacyPage from "@/pages/privacy"
 import AdminPage from "@/pages/admin"
 
-const THEME_COLOR = { milk: "#f6f1ea", olive: "#f1f0e8", noir: "#121110" } as const
+/** Каждый переход на «Запись» начинает запись заново, даже если уже открыта форма */
+function BookRoute() {
+  const { key } = useLocation()
+  return <BookPage key={key} />
+}
+
+const THEME_COLOR ={ milk: "#f6f1ea", olive: "#f1f0e8", noir: "#121110" } as const
 
 export default function App() {
   const theme = useAppState((s) => s.theme)
@@ -38,7 +44,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="procedures" element={<ProceduresPage />} />
           <Route path="procedures/:id" element={<ProcedurePage />} />
-          <Route path="book" element={<BookPage />} />
+          <Route path="book" element={<BookRoute />} />
           <Route path="done/:id" element={<DonePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="quiz" element={<QuizPage />} />

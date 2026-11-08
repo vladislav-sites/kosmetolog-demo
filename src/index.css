@@ -112,8 +112,9 @@
 [data-skin="noir"] {
   --heading: "Tenor Sans", "Helvetica Neue", sans-serif;
   --heading-style: normal;
-  --heading-case: uppercase;
-  --heading-track: 0.06em;
+  /* заглавными длинные русские слова не помещаются в телефон — обычный регистр */
+  --heading-case: none;
+  --heading-track: 0.01em;
   --background: #121110;
   --foreground: #ece4da;
   --card: #1b1917;
@@ -161,6 +162,9 @@
     text-transform: var(--heading-case);
     letter-spacing: var(--heading-track);
     font-weight: 400;
+    /* длинные русские слова («Комбинированная») не должны вылезать за экран */
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 }
 

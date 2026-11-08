@@ -48,7 +48,7 @@ export function InstallHint() {
   if (!show) return null
 
   return (
-    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 md:bottom-6 md:right-6 md:left-auto md:mx-0 md:w-96">
+    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 lg:bottom-6 lg:right-6 lg:left-auto lg:mx-0 lg:w-96">
       <div className="flex items-start gap-3 rounded-2xl border border-border bg-popover p-4 shadow-xl shadow-black/10">
         <SquarePlus className="mt-0.5 size-5 shrink-0 text-clay" />
         <div className="min-w-0 flex-1 text-sm">

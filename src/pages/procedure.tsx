@@ -32,13 +32,13 @@ export default function ProcedurePage() {
       </Link>
 
       <div className="mt-6 grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-14">
-        <div className="md:sticky md:top-24 md:self-start">
+        <div className="min-w-0 md:sticky md:top-24 md:self-start">
           <PhotoTile service={s} className="max-h-[420px] md:max-h-none" />
         </div>
 
-        <div>
+        <div className="min-w-0">
           {cat && <p className="eyebrow mb-3">{cat.title}</p>}
-          <h1 className="font-heading text-4xl leading-[1.05] sm:text-5xl">{s.title}</h1>
+          <h1 className="font-heading text-[2.1rem] leading-[1.05] sm:text-5xl">{s.title}</h1>
           <p className="mt-5 text-[1.02rem] leading-relaxed text-muted-foreground">{s.about}</p>
 
           <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-3">
@@ -103,7 +103,7 @@ export default function ProcedurePage() {
             )}
           </Accordion>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button asChild size="lg" className="h-12 rounded-full px-7">
               <Link to={`/book?service=${s.id}`}>
                 Записаться на процедуру <ArrowRight />

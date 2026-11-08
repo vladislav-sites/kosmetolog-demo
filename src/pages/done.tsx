@@ -44,7 +44,7 @@ export default function DonePage() {
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-card">
         <div className="bg-tint/70 px-5 py-4">
-          <p className="font-heading text-2xl first-letter:uppercase">{fmtDay(start)}</p>
+          <p className="text-xl font-semibold first-letter:uppercase">{fmtDay(start)}</p>
           <p className="text-sm text-muted-foreground">
             {b.start.slice(11)} · {dur(b.duration)}
           </p>

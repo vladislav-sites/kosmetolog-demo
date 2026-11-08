@@ -52,11 +52,11 @@ export function ServiceRow({ service, index }: { service: Service; index?: numbe
       to={`/procedures/${service.id}`}
       className="group grid grid-cols-[auto_1fr_auto] items-start gap-4 border-b border-border py-5 transition-colors first:border-t hover:bg-card/60 sm:gap-6 sm:px-2"
     >
-      <span className="w-7 pt-1 font-heading text-sm text-muted-foreground tabular-nums">
+      <span className="w-7 pt-1.5 text-xs font-medium text-muted-foreground tabular-nums">
         {index !== undefined ? String(index + 1).padStart(2, "0") : ""}
       </span>
       <span className="min-w-0">
-        <span className="block font-heading text-xl leading-snug sm:text-2xl">{service.title}</span>
+        <span className="block font-heading text-[1.2rem] leading-snug sm:text-2xl">{service.title}</span>
         <span className="mt-1 block text-sm text-muted-foreground">{service.short}</span>
         <span className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="size-3.5" /> {dur(service.duration)}
@@ -77,10 +77,10 @@ const THEMES: { id: ThemeId; label: string; swatch: string[] }[] = [
   { id: "noir", label: "Ночь", swatch: ["#121110", "#c9a27a", "#e2cdb0"] },
 ]
 
-export function ThemeSwitcher({ compact }: { compact?: boolean }) {
+export function ThemeSwitcher({ compact, className }: { compact?: boolean; className?: string }) {
   const theme = useAppState((s) => s.theme)
   return (
-    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Оформление">
+    <div className={cn("flex flex-wrap gap-2", className)} role="radiogroup" aria-label="Оформление">
       {THEMES.map((t) => (
         <button
           key={t.id}
@@ -88,7 +88,7 @@ export function ThemeSwitcher({ compact }: { compact?: boolean }) {
           aria-checked={theme === t.id}
           onClick={() => actions.setTheme(t.id)}
           className={cn(
-            "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+            "flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3",
             theme === t.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40",
           )}
         >

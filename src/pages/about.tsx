@@ -40,7 +40,7 @@ export default function AboutPage() {
           <ol className="mt-5">
             {master.education.map((e) => (
               <li key={e.title} className="grid grid-cols-[4rem_1fr] gap-4 border-t border-border py-4 last:border-b">
-                <span className="font-heading text-lg text-clay tabular-nums">{e.year}</span>
+                <span className="pt-0.5 font-semibold text-clay tabular-nums">{e.year}</span>
                 <span>
                   <span className="block font-medium">{e.title}</span>
                   <span className="text-sm text-muted-foreground">{e.place}</span>
