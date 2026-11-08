@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router"
 import { ArrowLeft, ArrowRight, CalendarClock, Clock, Repeat } from "lucide-react"
-import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Disclaimer, PhotoTile } from "@/components/bits"
@@ -10,7 +9,9 @@ import { dur, plural, price } from "@/lib/time"
 export default function ProcedurePage() {
   const { id } = useParams()
   const services = useAppState((s) => s.services)
+  const categories = useAppState((s) => s.categories)
   const s = services.find((x) => x.id === id && x.active)
+  const consult = services.find((x) => x.featured && x.active)
 
   if (!s)
     return (
@@ -22,8 +23,8 @@ export default function ProcedurePage() {
       </div>
     )
 
-  const cat = master.categories.find((c) => c.id === s.categoryId)
-  const needsConsult = !s.featured
+  const cat = categories.find((c) => c.id === s.categoryId)
+  const needsConsult = !s.featured && !!consult
 
   return (
     <article className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
@@ -111,7 +112,7 @@ export default function ProcedurePage() {
             </Button>
             {needsConsult && (
               <Button asChild variant="outline" size="lg" className="h-12 rounded-full bg-transparent px-7">
-                <Link to="/book?service=consult">Сначала консультация</Link>
+                <Link to={`/book?service=${consult!.id}`}>Сначала консультация</Link>
               </Button>
             )}
           </div>

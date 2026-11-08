@@ -4,7 +4,9 @@ import { addDays, differenceInCalendarDays, format, isSameDay, isToday, startOfD
 import { ru } from "date-fns/locale"
 import { toast } from "sonner"
 import {
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   BellRing,
   CalendarDays,
   Check,
@@ -13,9 +15,12 @@ import {
   LockKeyhole,
   MessageCircle,
   Palette,
+  Pencil,
   Phone,
+  Plus,
   RotateCcw,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react"
 import { cn } from "cn"
@@ -23,8 +28,10 @@ import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { NativeSelect } from "@/components/ui/native-select"
 import { Monogram, ThemeSwitcher } from "@/components/bits"
+import { DURATIONS, ServiceEditor } from "@/components/service-editor"
+import type { Category, Service } from "@/config/types"
 import { actions, useAppState, type Booking, type BookingStatus } from "@/lib/store"
 import { bookingEnd, dayKey, dur, fromMin, parseLocal, rub } from "@/lib/time"
 
@@ -90,7 +97,7 @@ function PinGate({ onOk }: { onOk: () => void }) {
 const TABS = [
   { id: "day", label: "Записи", icon: CalendarDays },
   { id: "repeat", label: "Позвать снова", icon: BellRing },
-  { id: "services", label: "Услуги и цены", icon: Sparkles },
+  { id: "services", label: "Процедуры", icon: Sparkles },
   { id: "hours", label: "График", icon: Clock },
   { id: "gifts", label: "Сертификаты", icon: Gift },
   { id: "look", label: "Оформление", icon: Palette },
@@ -408,25 +415,98 @@ function RepeatTab() {
 
 /* ———————————————— Услуги ———————————————— */
 
-const DURATIONS = Array.from({ length: 11 }, (_, i) => 30 + i * 15)
-
 function ServicesTab() {
   const services = useAppState((s) => s.services)
+  const categories = useAppState((s) => s.categories)
+  const [editing, setEditing] = useState<Service | null | undefined>(undefined)
+  const [renaming, setRenaming] = useState<string | null>(null)
+
+  const groups = [
+    ...categories.map((c) => ({ cat: c as Category | null, items: services.filter((s) => s.categoryId === c.id) })),
+    { cat: null, items: services.filter((s) => !categories.some((c) => c.id === s.categoryId)) },
+  ].filter((g) => g.cat || g.items.length)
+
   return (
     <section>
-      <h2 className="font-heading text-2xl">Услуги и цены</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Изменения сразу видны на сайте. Длительность — сколько времени занимает запись.</p>
-      <div className="mt-6 space-y-2.5">
-        {services.map((svc) => (
-          <div key={svc.id} className={cn("rounded-2xl border border-border bg-card p-4", !svc.active && "opacity-60")}>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="font-heading text-2xl">Процедуры и цены</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Изменения сразу видны на сайте. Длительность — сколько времени занимает запись.</p>
+        </div>
+        <Button className="rounded-full" onClick={() => setEditing(null)}>
+          <Plus /> Новая процедура
+        </Button>
+      </div>
+
+      <div className="mt-6 space-y-8">
+        {groups.map(({ cat, items }) => (
+          <div key={cat?.id ?? "none"}>
+            <div className="mb-2.5 flex min-h-9 items-center gap-2">
+              {cat && renaming === cat.id ? (
+                <Input
+                  autoFocus
+                  defaultValue={cat.title}
+                  aria-label="Название раздела"
+                  className="h-9 max-w-xs rounded-xl"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur()
+                    if (e.key === "Escape") setRenaming(null)
+                  }}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim()
+                    if (v && v !== cat.title) actions.updateCategory(cat.id, { title: v })
+                    setRenaming(null)
+                  }}
+                />
+              ) : (
+                <>
+                  <h3 className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">{cat?.title ?? "Без раздела"}</h3>
+                  {cat && (
+                    <button onClick={() => setRenaming(cat.id)} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`Переименовать раздел «${cat.title}»`}>
+                      <Pencil className="size-3.5" />
+                    </button>
+                  )}
+                  {cat && items.length === 0 && (
+                    <button
+                      onClick={() => actions.deleteCategory(cat.id) && toast(`Раздел «${cat.title}» удалён`)}
+                      className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
+                      aria-label={`Удалить пустой раздел «${cat.title}»`}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+            {items.length === 0 && <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">В разделе пока нет процедур</p>}
+            <div className="space-y-2.5">
+              {items.map((svc, i) => (
+                <ServiceCard key={svc.id} svc={svc} first={i === 0} last={i === items.length - 1} onEdit={() => setEditing(svc)} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <ServiceEditor service={editing} onClose={() => setEditing(undefined)} />
+    </section>
+  )
+}
+
+function ServiceCard({ svc, first, last, onEdit }: { svc: Service; first: boolean; last: boolean; onEdit: () => void }) {
+  return (
+          <div className={cn("rounded-2xl border border-border bg-card p-4", !svc.active && "opacity-60")}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-medium">{svc.title}</p>
-                <p className="text-xs text-muted-foreground">{master.categories.find((c) => c.id === svc.categoryId)?.title}</p>
+                <p className="font-medium">
+                  {svc.title}
+                  {svc.featured && <span className="ml-2 rounded-full bg-tint px-2 py-0.5 align-middle text-[0.65rem] font-semibold tracking-wide uppercase">консультация</span>}
+                </p>
+                {svc.short && <p className="mt-0.5 text-xs text-muted-foreground">{svc.short}</p>}
               </div>
               <label className="flex shrink-0 items-center gap-2 text-xs whitespace-nowrap text-muted-foreground">
                 {svc.active ? "на сайте" : "скрыта"}
-                <Switch checked={svc.active} onCheckedChange={(v) => actions.updateService(svc.id, { active: v })} />
+                <Switch checked={svc.active} onCheckedChange={(v) => actions.updateService(svc.id, { active: v })} aria-label={`Показывать «${svc.title}» на сайте`} />
               </label>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:max-w-md">
@@ -452,26 +532,33 @@ function ServicesTab() {
               </label>
               <label className="space-y-1">
                 <span className="text-xs text-muted-foreground">Длительность</span>
-                <Select value={String(svc.duration)} onValueChange={(v) => actions.updateService(svc.id, { duration: Number(v) })}>
-                  <SelectTrigger className="h-10 w-full rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[...new Set([...DURATIONS, svc.duration])]
-                      .sort((a, b) => a - b)
-                      .map((d) => (
-                        <SelectItem key={d} value={String(d)}>
-                          {dur(d)}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={String(svc.duration)}
+                  onChange={(e) => actions.updateService(svc.id, { duration: Number(e.target.value) })}
+                  aria-label={`Длительность «${svc.title}»`}
+                >
+                  {[...new Set([...DURATIONS, svc.duration])]
+                    .sort((a, b) => a - b)
+                    .map((d) => (
+                      <option key={d} value={d}>
+                        {dur(d)}
+                      </option>
+                    ))}
+                </NativeSelect>
               </label>
             </div>
+            <div className="mt-3 flex items-center gap-1">
+              <Button variant="outline" size="sm" className="rounded-full bg-transparent" onClick={onEdit}>
+                <Pencil /> Изменить
+              </Button>
+              <Button variant="ghost" size="icon-sm" className="ml-auto rounded-full" disabled={first} onClick={() => actions.moveService(svc.id, -1)} aria-label="Выше">
+                <ArrowUp />
+              </Button>
+              <Button variant="ghost" size="icon-sm" className="rounded-full" disabled={last} onClick={() => actions.moveService(svc.id, 1)} aria-label="Ниже">
+                <ArrowDown />
+              </Button>
+            </div>
           </div>
-        ))}
-      </div>
-    </section>
   )
 }
 
@@ -496,9 +583,9 @@ function HoursTab() {
               <span className={cn("w-32 text-sm font-medium", !w.enabled && "text-muted-foreground")}>{DAY_NAMES[d]}</span>
               {w.enabled ? (
                 <div className="ml-auto flex items-center gap-2">
-                  <TimeSelect value={w.from} onChange={(v) => actions.setWorkDay(d, { from: v })} />
+                  <TimeSelect label={`${DAY_NAMES[d]}: начало`} value={w.from} onChange={(v) => actions.setWorkDay(d, { from: v })} />
                   <span className="text-muted-foreground">—</span>
-                  <TimeSelect value={w.to} onChange={(v) => actions.setWorkDay(d, { to: v })} />
+                  <TimeSelect label={`${DAY_NAMES[d]}: конец`} value={w.to} onChange={(v) => actions.setWorkDay(d, { to: v })} />
                 </div>
               ) : (
                 <span className="ml-auto text-sm text-muted-foreground">выходной</span>
@@ -511,20 +598,15 @@ function HoursTab() {
   )
 }
 
-function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-9 w-24 rounded-xl tabular-nums">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {TIMES.map((t) => (
-          <SelectItem key={t} value={t} className="tabular-nums">
-            {t}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <NativeSelect value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} wrapperClassName="w-24" className="h-9 tabular-nums">
+      {TIMES.map((t) => (
+        <option key={t} value={t}>
+          {t}
+        </option>
+      ))}
+    </NativeSelect>
   )
 }
 

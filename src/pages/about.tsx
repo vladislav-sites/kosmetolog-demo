@@ -3,8 +3,10 @@ import { ArrowRight, GraduationCap } from "lucide-react"
 import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { plural } from "@/lib/time"
+import { useAppState } from "@/lib/store"
 
 export default function AboutPage() {
+  const consult = useAppState((s) => s.services).find((x) => x.featured && x.active)
   const initials = master.masterName
     .split(" ")
     .map((w) => w[0])
@@ -60,8 +62,8 @@ export default function AboutPage() {
           </div>
 
           <Button asChild size="lg" className="mt-12 h-12 rounded-full px-7">
-            <Link to="/book?service=consult">
-              Записаться на консультацию <ArrowRight />
+            <Link to={consult ? `/book?service=${consult.id}` : "/book"}>
+              {consult ? "Записаться на консультацию" : "Записаться"} <ArrowRight />
             </Link>
           </Button>
         </div>

@@ -9,7 +9,6 @@ import ProcedurePage from "@/pages/procedure"
 import BookPage from "@/pages/book"
 import DonePage from "@/pages/done"
 import AboutPage from "@/pages/about"
-import QuizPage from "@/pages/quiz"
 import GiftPage from "@/pages/gift"
 import PrivacyPage from "@/pages/privacy"
 import AdminPage from "@/pages/admin"
@@ -47,7 +46,6 @@ export default function App() {
           <Route path="book" element={<BookRoute />} />
           <Route path="done/:id" element={<DonePage />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="quiz" element={<QuizPage />} />
           <Route path="gift" element={<GiftPage />} />
           <Route path="privacy" element={<PrivacyPage />} />
           <Route path="*" element={<HomePage />} />

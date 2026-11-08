@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { Link } from "react-router"
 import { addDays, isToday, isTomorrow } from "date-fns"
-import { ArrowRight, Gift, MapPin, Sparkles } from "lucide-react"
+import { ArrowRight, Gift, MapPin } from "lucide-react"
 import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { SectionTitle, ServiceRow } from "@/components/bits"
@@ -46,9 +46,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 rounded-full bg-transparent px-7 text-[0.95rem]">
-              <Link to="/quiz">
-                <Sparkles /> Подобрать процедуру
-              </Link>
+              <Link to="/procedures">Процедуры и цены</Link>
             </Button>
           </div>
           <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-border pt-6">
@@ -106,21 +104,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ——— Подбор ——— */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="grain relative overflow-hidden rounded-3xl bg-primary px-6 py-10 text-primary-foreground sm:px-10 md:py-14">
-          <div className="relative z-10 max-w-xl">
-            <p className="text-[0.7rem] font-semibold tracking-[0.18em] uppercase opacity-70">Не знаете, с чего начать?</p>
-            <h2 className="mt-3 font-heading text-3xl leading-tight sm:text-4xl">Ответьте на 4 вопроса — подскажу, с какой процедуры начать</h2>
-            <Button asChild variant="secondary" size="lg" className="mt-7 h-12 rounded-full px-7">
-              <Link to="/quiz">
-                Пройти за минуту <ArrowRight />
-              </Link>
-            </Button>
+      {/* ——— С чего начать: консультация ——— */}
+      {consult && (
+        <section className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grain relative overflow-hidden rounded-3xl bg-primary px-6 py-10 text-primary-foreground sm:px-10 md:py-14">
+            <div className="relative z-10 max-w-xl">
+              <p className="text-[0.7rem] font-semibold tracking-[0.18em] uppercase opacity-70">Не знаете, с чего начать?</p>
+              <h2 className="mt-3 font-heading text-3xl leading-tight sm:text-4xl">Начните с консультации — подберём уход и процедуры под вашу кожу</h2>
+              <Button asChild variant="secondary" size="lg" className="mt-7 h-12 rounded-full px-7">
+                <Link to={`/book?service=${consult.id}`}>
+                  Записаться · {price(consult.price)} <ArrowRight />
+                </Link>
+              </Button>
+            </div>
+            <div className="arch absolute -right-16 -bottom-24 h-80 w-64 opacity-40 sm:right-10 sm:h-96 sm:w-72" />
           </div>
-          <div className="arch absolute -right-16 -bottom-24 h-80 w-64 opacity-40 sm:right-10 sm:h-96 sm:w-72" />
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ——— Принципы ——— */}
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">

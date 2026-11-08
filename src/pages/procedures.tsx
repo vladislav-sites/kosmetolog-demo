@@ -1,13 +1,13 @@
 import { useState } from "react"
 import { cn } from "cn"
-import { master } from "@/config/master"
 import { Disclaimer, SectionTitle, ServiceRow } from "@/components/bits"
 import { useAppState } from "@/lib/store"
 
 export default function ProceduresPage() {
   const services = useAppState((s) => s.services)
+  const categories = useAppState((s) => s.categories)
   const [cat, setCat] = useState<string>("all")
-  const cats = master.categories.filter((c) => services.some((s) => s.active && s.categoryId === c.id))
+  const cats = categories.filter((c) => services.some((s) => s.active && s.categoryId === c.id))
   const shown = cats.filter((c) => cat === "all" || c.id === cat)
 
   return (

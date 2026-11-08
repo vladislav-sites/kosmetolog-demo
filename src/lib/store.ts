@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react"
 import { addDays, format } from "date-fns"
 import { master } from "@/config/master"
-import type { Service, ThemeId, WorkDay } from "@/config/types"
+import type { Category, Service, ThemeId, WorkDay } from "@/config/types"
 
 /**
  * Слой данных. Сейчас всё хранится в браузере (localStorage) — для демо.
@@ -38,6 +38,7 @@ export type GiftRequest = {
 
 export type AppState = {
   version: number
+  categories: Category[]
   services: Service[]
   week: Record<number, WorkDay>
   daysOff: string[]
@@ -47,7 +48,7 @@ export type AppState = {
 }
 
 const KEY = "cosmo-app-state"
-const VERSION = 1
+const VERSION = 2
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -84,6 +85,7 @@ function demoBookings(): Booking[] {
 function initialState(): AppState {
   return {
     version: VERSION,
+    categories: master.categories.map((c) => ({ ...c })),
     services: master.services.map((s) => ({ ...s })),
     week: structuredClone(master.week),
     daysOff: [],
@@ -99,6 +101,8 @@ function load(): AppState {
     if (raw) {
       const parsed = JSON.parse(raw) as AppState
       if (parsed.version === VERSION) return parsed
+      // v1 → v2: разделы процедур стали редактируемыми, остальное сохраняем
+      if (parsed.version === 1) return { ...parsed, version: VERSION, categories: master.categories.map((c) => ({ ...c })) }
     }
   } catch {
     /* хранилище недоступно — работаем в памяти */
@@ -150,7 +154,52 @@ export const actions = {
     commit({ ...state, bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)) })
   },
   updateService(id: string, patch: Partial<Service>) {
-    commit({ ...state, services: state.services.map((s) => (s.id === id ? { ...s, ...patch } : s)) })
+    const unfeature = patch.featured === true
+    commit({
+      ...state,
+      services: state.services.map((s) => (s.id === id ? { ...s, ...patch } : unfeature ? { ...s, featured: false } : s)),
+    })
+  },
+  /** Новая процедура встаёт в конец своего раздела */
+  addService(svc: Omit<Service, "id">): Service {
+    const created: Service = { ...svc, id: uid() }
+    const list = [...state.services]
+    const lastInCat = list.map((s) => s.categoryId).lastIndexOf(svc.categoryId)
+    list.splice(lastInCat === -1 ? list.length : lastInCat + 1, 0, created)
+    commit({
+      ...state,
+      services: created.featured ? list.map((s) => (s.id === created.id ? s : { ...s, featured: false })) : list,
+    })
+    return created
+  },
+  /** Прошлые и будущие записи хранят название и цену сами, поэтому удаление их не ломает */
+  deleteService(id: string) {
+    commit({ ...state, services: state.services.filter((s) => s.id !== id) })
+  },
+  /** Сдвинуть процедуру вверх/вниз внутри её раздела */
+  moveService(id: string, dir: -1 | 1) {
+    const list = [...state.services]
+    const i = list.findIndex((s) => s.id === id)
+    if (i === -1) return
+    let j = i + dir
+    while (j >= 0 && j < list.length && list[j].categoryId !== list[i].categoryId) j += dir
+    if (j < 0 || j >= list.length) return
+    ;[list[i], list[j]] = [list[j], list[i]]
+    commit({ ...state, services: list })
+  },
+  addCategory(title: string): Category {
+    const c: Category = { id: uid(), title: title.trim(), description: "" }
+    commit({ ...state, categories: [...state.categories, c] })
+    return c
+  },
+  updateCategory(id: string, patch: Partial<Category>) {
+    commit({ ...state, categories: state.categories.map((c) => (c.id === id ? { ...c, ...patch } : c)) })
+  },
+  /** Удалить можно только пустой раздел */
+  deleteCategory(id: string) {
+    if (state.services.some((s) => s.categoryId === id)) return false
+    commit({ ...state, categories: state.categories.filter((c) => c.id !== id) })
+    return true
   },
   setWorkDay(day: number, patch: Partial<WorkDay>) {
     commit({ ...state, week: { ...state.week, [day]: { ...state.week[day], ...patch } } })
