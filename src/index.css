@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/manrope";
+@import "@fontsource/prata/cyrillic-400.css";
+@import "@fontsource/prata/latin-400.css";
+@import "@fontsource-variable/lora/wght-italic.css";
+@import "@fontsource-variable/lora";
+@import "@fontsource/tenor-sans/cyrillic-400.css";
+@import "@fontsource/tenor-sans/latin-400.css";
+
+@custom-variant dark (&:is([data-skin="noir"] *));
+
+@theme inline {
+  --font-heading: var(--heading);
+  --font-sans: "Manrope Variable", system-ui, sans-serif;
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-clay: var(--clay);
+  --color-tint: var(--tint);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ——— Оформление «Молочное»: тёплая бумага, эспрессо, глина ——— */
+:root,
+[data-skin="milk"] {
+  --heading: "Prata", Georgia, serif;
+  --heading-style: normal;
+  --heading-case: none;
+  --heading-track: -0.01em;
+  --background: #f6f1ea;
+  --foreground: #2a211d;
+  --card: #fbf8f4;
+  --card-foreground: #2a211d;
+  --popover: #fbf8f4;
+  --popover-foreground: #2a211d;
+  --primary: #2f2420;
+  --primary-foreground: #f8f3ec;
+  --secondary: #ece3d8;
+  --secondary-foreground: #2a211d;
+  --muted: #ede5db;
+  --muted-foreground: #76665d;
+  --accent: #e9ddd0;
+  --accent-foreground: #2a211d;
+  --destructive: #b4412f;
+  --border: #e2d6c9;
+  --input: #dccfc1;
+  --ring: #a86a4f;
+  --clay: #a86a4f;
+  --tint: #e8d5c4;
+  --arch-a: #e9d3c0;
+  --arch-b: #c99b80;
+  --radius: 0.9rem;
+  color-scheme: light;
+}
+
+/* ——— «Олива»: натуральный, спокойный ——— */
+[data-skin="olive"] {
+  --heading: "Lora Variable", Georgia, serif;
+  --heading-style: italic;
+  --heading-case: none;
+  --heading-track: -0.015em;
+  --background: #f1f0e8;
+  --foreground: #22261c;
+  --card: #f8f7f1;
+  --card-foreground: #22261c;
+  --popover: #f8f7f1;
+  --popover-foreground: #22261c;
+  --primary: #3f4b33;
+  --primary-foreground: #f4f3ea;
+  --secondary: #e3e3d4;
+  --secondary-foreground: #22261c;
+  --muted: #e6e5d8;
+  --muted-foreground: #66695a;
+  --accent: #dfdfcd;
+  --accent-foreground: #22261c;
+  --destructive: #a8432f;
+  --border: #d8d8c7;
+  --input: #cfcfbc;
+  --ring: #8c7448;
+  --clay: #8c7448;
+  --tint: #d9d6bf;
+  --arch-a: #d8dcc6;
+  --arch-b: #8f9a73;
+  --radius: 1.25rem;
+  color-scheme: light;
+}
+
+/* ——— «Ночь»: тёмный премиум, шампань ——— */
+[data-skin="noir"] {
+  --heading: "Tenor Sans", "Helvetica Neue", sans-serif;
+  --heading-style: normal;
+  --heading-case: uppercase;
+  --heading-track: 0.06em;
+  --background: #121110;
+  --foreground: #ece4da;
+  --card: #1b1917;
+  --card-foreground: #ece4da;
+  --popover: #1f1c1a;
+  --popover-foreground: #ece4da;
+  --primary: #e2cdb0;
+  --primary-foreground: #1a1714;
+  --secondary: #26231f;
+  --secondary-foreground: #ece4da;
+  --muted: #221f1c;
+  --muted-foreground: #a3978b;
+  --accent: #2b2723;
+  --accent-foreground: #ece4da;
+  --destructive: #e07a64;
+  --border: #302b27;
+  --input: #3a342f;
+  --ring: #c9a27a;
+  --clay: #c9a27a;
+  --tint: #2c2621;
+  --arch-a: #3a302a;
+  --arch-b: #8a6c52;
+  --radius: 0.35rem;
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  .font-heading {
+    font-style: var(--heading-style);
+    text-transform: var(--heading-case);
+    letter-spacing: var(--heading-track);
+    font-weight: 400;
+  }
+}
+
+@layer components {
+  /* Арка — фирменная форма вместо фото, пока фото нет */
+  .arch {
+    border-radius: 999px 999px var(--radius) var(--radius);
+    background:
+      radial-gradient(120% 80% at 30% 20%, color-mix(in oklab, var(--arch-a) 90%, white) 0%, transparent 60%),
+      radial-gradient(90% 70% at 80% 90%, var(--arch-b) 0%, transparent 70%),
+      linear-gradient(160deg, var(--arch-a), var(--arch-b));
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    border-radius: inherit;
+  }
+  .eyebrow {
+    @apply text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+  .hairline {
+    @apply h-px w-full bg-border;
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
