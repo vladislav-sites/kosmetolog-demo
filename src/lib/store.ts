@@ -45,10 +45,15 @@ export type AppState = {
   theme: ThemeId
   bookings: Booking[]
   gifts: GiftRequest[]
+  /** Ровно три номинала сертификата, мастер меняет их в кабинете */
+  giftAmounts: number[]
 }
 
 const KEY = "cosmo-app-state"
-const VERSION = 2
+const VERSION = 3
+
+export const GIFT_MIN = 100
+export const GIFT_MAX = 1_000_000
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -92,17 +97,32 @@ function initialState(): AppState {
     theme: master.theme,
     bookings: master.demo ? demoBookings() : [],
     gifts: [],
+    giftAmounts: defaultGiftAmounts(),
   }
+}
+
+function defaultGiftAmounts() {
+  const a = master.giftAmounts.slice(0, 3)
+  while (a.length < 3) a.push(a[a.length - 1] ?? 3000)
+  return a
+}
+
+/** Подтягивает сохранённые данные старых версий до текущей, ничего не теряя */
+function migrate(p: AppState): AppState | null {
+  let s = p
+  // v1 → v2: разделы процедур стали редактируемыми
+  if (s.version === 1) s = { ...s, version: 2, categories: master.categories.map((c) => ({ ...c })) }
+  // v2 → v3: номиналы сертификатов стали редактируемыми
+  if (s.version === 2) s = { ...s, version: 3, giftAmounts: defaultGiftAmounts() }
+  return s.version === VERSION ? s : null
 }
 
 function load(): AppState {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
-      const parsed = JSON.parse(raw) as AppState
-      if (parsed.version === VERSION) return parsed
-      // v1 → v2: разделы процедур стали редактируемыми, остальное сохраняем
-      if (parsed.version === 1) return { ...parsed, version: VERSION, categories: master.categories.map((c) => ({ ...c })) }
+      const migrated = migrate(JSON.parse(raw) as AppState)
+      if (migrated) return migrated
     }
   } catch {
     /* хранилище недоступно — работаем в памяти */
@@ -213,6 +233,13 @@ export const actions = {
   },
   addGift(g: Omit<GiftRequest, "id" | "status" | "createdAt">) {
     commit({ ...state, gifts: [...state.gifts, { ...g, id: uid(), status: "new", createdAt: new Date().toISOString() }] })
+  },
+  /** Поменять один из трёх номиналов (index 0–2). Возвращает сохранённое значение или null, если сумма не подходит */
+  setGiftAmount(index: number, value: number): number | null {
+    const v = Math.round(value)
+    if (!Number.isFinite(v) || v < GIFT_MIN || v > GIFT_MAX || index < 0 || index > 2) return null
+    commit({ ...state, giftAmounts: state.giftAmounts.map((a, i) => (i === index ? v : a)) })
+    return v
   },
   setGiftStatus(id: string, status: GiftRequest["status"]) {
     commit({ ...state, gifts: state.gifts.map((g) => (g.id === id ? { ...g, status } : g)) })

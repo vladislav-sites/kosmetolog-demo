@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Consent } from "@/components/consent"
-import { actions } from "@/lib/store"
+import { actions, useAppState } from "@/lib/store"
 import { rub } from "@/lib/time"
 import { formatPhone, phoneValid } from "@/lib/phone"
 
 export default function GiftPage() {
-  const [amount, setAmount] = useState(master.giftAmounts[1] ?? master.giftAmounts[0])
+  const amounts = useAppState((s) => s.giftAmounts)
+  const [picked, setPicked] = useState(1)
+  const amount = amounts[picked] ?? amounts[0]
   const [forName, setForName] = useState("")
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
@@ -39,7 +41,14 @@ export default function GiftPage() {
               <Gift className="size-5 opacity-70" />
             </div>
             <div>
-              <p className="text-[2.6rem] leading-none font-extralight tracking-tight whitespace-nowrap tabular-nums sm:text-6xl">{rub(amount)}</p>
+              <p
+                className={cn(
+                  "leading-none font-extralight tracking-tight whitespace-nowrap tabular-nums",
+                  amount >= 100_000 ? "text-[2rem] sm:text-5xl" : "text-[2.6rem] sm:text-6xl",
+                )}
+              >
+                {rub(amount)}
+              </p>
               <p className="mt-2 text-sm opacity-80">{forName.trim() ? `для ${forName.trim()}` : "на любые процедуры"}</p>
             </div>
             <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 text-xs opacity-80">
@@ -72,13 +81,14 @@ export default function GiftPage() {
             <div>
               <Label>Номинал</Label>
               <div className="mt-2 grid grid-cols-3 gap-2">
-                {master.giftAmounts.map((v) => (
+                {amounts.map((v, i) => (
                   <button
-                    key={v}
-                    onClick={() => setAmount(v)}
+                    key={i}
+                    onClick={() => setPicked(i)}
+                    aria-pressed={picked === i}
                     className={cn(
-                      "h-12 rounded-xl border text-sm font-medium tabular-nums transition-colors",
-                      amount === v ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40",
+                      "h-12 min-w-0 rounded-xl border px-1 text-sm font-medium whitespace-nowrap tabular-nums transition-colors",
+                      picked === i ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40",
                     )}
                   >
                     {rub(v)}

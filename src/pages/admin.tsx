@@ -32,7 +32,7 @@ import { NativeSelect } from "@/components/ui/native-select"
 import { Monogram, ThemeSwitcher } from "@/components/bits"
 import { DURATIONS, ServiceEditor } from "@/components/service-editor"
 import type { Category, Service } from "@/config/types"
-import { actions, useAppState, type Booking, type BookingStatus } from "@/lib/store"
+import { actions, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
 import { bookingEnd, dayKey, dur, fromMin, parseLocal, rub } from "@/lib/time"
 
 const AUTH = "cosmo-admin-ok"
@@ -614,11 +614,51 @@ function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: s
 
 function GiftsTab() {
   const gifts = useAppState((s) => s.gifts)
+  const amounts = useAppState((s) => s.giftAmounts)
   return (
     <section>
       <h2 className="font-heading text-2xl">Сертификаты</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Заявки с сайта. Свяжитесь, примите оплату и отправьте открытку.</p>
-      <div className="mt-6 space-y-2.5">
+
+      <div className="mt-5 rounded-2xl border border-border bg-card p-4">
+        <p className="font-medium">Номиналы на сайте</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Три суммы, из которых выбирают покупатели. Любая сумма от {rub(GIFT_MIN)} до {rub(GIFT_MAX)}.
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:max-w-md">
+          {amounts.map((a, i) => (
+            <label key={i} className="min-w-0 space-y-1">
+              <span className="text-xs text-muted-foreground">Номинал {i + 1}, ₽</span>
+              <Input
+                key={a}
+                inputMode="numeric"
+                defaultValue={a}
+                aria-label={`Номинал ${i + 1}, рублей`}
+                onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+                onChange={(e) => {
+                  const clean = e.target.value.replace(/[^\d\s]/g, "")
+                  if (clean !== e.target.value) e.target.value = clean
+                }}
+                onBlur={(e) => {
+                  const raw = e.target.value.replace(/\s/g, "")
+                  if (raw === String(a)) return
+                  const saved = raw ? actions.setGiftAmount(i, Number(raw)) : null
+                  if (saved === null) {
+                    e.target.value = String(a)
+                    toast.error(`Номинал ${i + 1}: сумма от ${rub(GIFT_MIN)} до ${rub(GIFT_MAX)}`)
+                  } else {
+                    toast.success(`Номинал ${i + 1}: ${rub(saved)}`)
+                  }
+                }}
+                className="h-10 rounded-xl tabular-nums"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <p className="mt-8 font-medium">Заявки</p>
+      <p className="mt-0.5 text-sm text-muted-foreground">Свяжитесь, примите оплату и отправьте открытку.</p>
+      <div className="mt-4 space-y-2.5">
         {gifts.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
             Заявок пока нет. Попробуйте оформить сертификат на сайте — заявка появится здесь.
