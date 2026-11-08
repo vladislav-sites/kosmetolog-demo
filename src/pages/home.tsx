@@ -91,29 +91,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ——— Первый визит ——— */}
-      <section className="border-y border-border bg-card/60">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
-          <SectionTitle eyebrow="Первый визит" title="Начинаем с разговора, а не с процедуры" />
-          <ol className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              ["Запись", "Выбираете удобное время онлайн — без переписки и ожидания ответа."],
-              ["Консультация", "Смотрим кожу, обсуждаем, что беспокоит и что вы уже пробовали."],
-              ["План", "Получаете план ухода и процедур с ценами — без навязанных курсов."],
-              ["Процедуры", "Делаем только то, что действительно нужно вашей коже."],
-            ].map(([t, d], i) => (
-              <li key={t} className="bg-card p-6">
-                <span className="font-heading text-3xl text-clay">{String(i + 1).padStart(2, "0")}</span>
-                <p className="mt-4 font-medium">{t}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{d}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
       {/* ——— Процедуры ——— */}
-      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
+      <section className="mx-auto max-w-6xl border-t border-border px-4 py-14 sm:px-6 md:py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle eyebrow="Процедуры и цены" title="Что я делаю" className="mb-6" />
           <Link to="/procedures" className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
