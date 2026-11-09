@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router"
 import { addDays, differenceInCalendarDays, format, isSameDay, isToday, startOfDay } from "date-fns"
 import { ru } from "date-fns/locale"
@@ -34,7 +34,7 @@ import { DURATIONS, ServiceEditor } from "@/components/service-editor"
 import { tap } from "@/lib/transition"
 import { ProfileEditor } from "@/components/profile-editor"
 import type { Category, Service } from "@/config/types"
-import { actions, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
+import { actions, getState, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
 import { bookingEnd, dayKey, dur, fromMin, parseLocal, rub } from "@/lib/time"
 
 const AUTH = "cosmo-admin-ok"
@@ -131,20 +131,7 @@ function Cabinet() {
             <p className="text-[0.7rem] text-muted-foreground">Кабинет</p>
             <p className="truncate font-heading text-[1.05rem]">{s.profile.name}</p>
           </div>
-          {master.demo && (
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Сбросить демо-данные"
-              className="ml-auto shrink-0 rounded-full text-muted-foreground"
-              onClick={() => {
-                actions.resetDemo()
-                toast.success("Демо-данные сброшены")
-              }}
-            >
-              <RotateCcw /> <span className="hidden min-[400px]:inline">Сбросить демо</span>
-            </Button>
-          )}
+          {master.demo && <ResetDemoButton />}
         </div>
         {/* на компьютере вкладки сверху */}
         <nav className="mx-auto hidden max-w-5xl gap-1 px-6 pb-2 lg:flex">
@@ -211,6 +198,42 @@ function Cabinet() {
           })}
         </div>
       </nav>
+    </div>
+  )
+}
+
+/** «Сбросить демо» стирает всё — поэтому в два касания: первое спрашивает, второе сбрасывает */
+function ResetDemoButton() {
+  const [asking, setAsking] = useState(false)
+  useEffect(() => {
+    if (!asking) return
+    const t = window.setTimeout(() => setAsking(false), 4000)
+    return () => window.clearTimeout(t)
+  }, [asking])
+
+  if (!asking)
+    return (
+      <Button variant="ghost" size="sm" aria-label="Сбросить демо-данные" className="ml-auto shrink-0 rounded-full text-muted-foreground" onClick={() => setAsking(true)}>
+        <RotateCcw /> <span className="hidden min-[400px]:inline">Сбросить демо</span>
+      </Button>
+    )
+  return (
+    <div className="ml-auto flex shrink-0 items-center gap-1 animate-in fade-in">
+      <Button
+        variant="destructive"
+        size="sm"
+        className="rounded-full"
+        onClick={() => {
+          setAsking(false)
+          actions.resetDemo()
+          toast.success("Демо-данные сброшены")
+        }}
+      >
+        Да, сбросить всё
+      </Button>
+      <Button variant="ghost" size="icon-sm" aria-label="Не сбрасывать" className="rounded-full" onClick={() => setAsking(false)}>
+        <X />
+      </Button>
     </div>
   )
 }
@@ -321,6 +344,31 @@ function BookingCard({ b }: { b: Booking }) {
   const start = parseLocal(b.start)
   const end = bookingEnd(b)
   const digits = b.phone.replace(/\D/g, "")
+  // Отмена — только после «Да, отменить»: одно касание мимо не должно снимать клиентку с записи
+  const [asking, setAsking] = useState(false)
+
+  const cancel = () => {
+    const prev = b.status
+    setAsking(false)
+    actions.setBookingStatus(b.id, "cancelled")
+    toast("Запись отменена — время снова свободно", {
+      action: { label: "Вернуть", onClick: () => actions.setBookingStatus(b.id, prev) },
+    })
+  }
+
+  /** Вернуть отменённую — если за это время на её место никто не записался */
+  const restore = () => {
+    const busy = getState().bookings.some(
+      (x) => x.id !== b.id && x.status !== "cancelled" && parseLocal(x.start) < end && bookingEnd(x) > start,
+    )
+    if (busy) {
+      toast.error("Это время уже занято другой записью — вернуть не получится")
+      return
+    }
+    actions.setBookingStatus(b.id, "confirmed")
+    toast.success(`Запись вернулась: ${b.name}, ${format(start, "HH:mm")}`)
+  }
+
   return (
     <div className={cn("grid grid-cols-[4.5rem_1fr] gap-4 rounded-2xl border border-border bg-card p-4", b.status === "cancelled" && "opacity-60")}>
       <div className="border-r border-border pr-3">
@@ -357,24 +405,42 @@ function BookingCard({ b }: { b: Booking }) {
               <Check /> Пришла
             </Button>
           )}
-          {(b.status === "new" || b.status === "confirmed") && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="rounded-full text-destructive hover:text-destructive"
-              onClick={() => {
-                const prev = b.status
-                actions.setBookingStatus(b.id, "cancelled")
-                // промахнулась пальцем — можно вернуть
-                toast("Запись отменена — время снова свободно", {
-                  action: { label: "Вернуть", onClick: () => actions.setBookingStatus(b.id, prev) },
-                })
-              }}
-            >
+          {(b.status === "new" || b.status === "confirmed") && !asking && (
+            <Button size="sm" variant="ghost" className="rounded-full text-destructive hover:text-destructive" onClick={() => setAsking(true)}>
               <X /> Отменить
             </Button>
           )}
+          {/* «Пришла» нажали по ошибке — вернуть в подтверждённые */}
+          {b.status === "done" && (
+            <Button size="sm" variant="ghost" className="rounded-full text-muted-foreground" onClick={() => actions.setBookingStatus(b.id, "confirmed")}>
+              <RotateCcw /> Ещё не пришла
+            </Button>
+          )}
+          {b.status === "cancelled" && (
+            <Button size="sm" variant="outline" className="rounded-full bg-transparent" onClick={restore}>
+              <RotateCcw /> Вернуть запись
+            </Button>
+          )}
         </div>
+
+        {asking && (
+          <div role="alertdialog" aria-label="Подтвердите отмену" className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3 animate-in fade-in">
+            {/* имя — отдельно, без склонения: клиентки пишут его как угодно */}
+            <p className="text-sm font-medium">Отменить запись?</p>
+            <p className="text-sm">
+              {b.name}, {format(start, "HH:mm")} · {b.serviceTitle}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Время снова станет свободным для записи на сайте.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="sm" variant="destructive" className="rounded-full" onClick={cancel}>
+                Да, отменить
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-full bg-transparent" autoFocus onClick={() => setAsking(false)}>
+                Нет, оставить
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -661,7 +727,10 @@ function GiftsTab() {
                 <Check /> Выдан
               </Button>
             ) : (
-              <span className="text-xs text-muted-foreground">выдан</span>
+              // нажала «Выдан» по ошибке — можно вернуть в новые
+              <Button size="sm" variant="ghost" className="rounded-full text-muted-foreground" onClick={() => actions.setGiftStatus(g.id, "new")}>
+                <RotateCcw /> Не выдан
+              </Button>
             )}
           </div>
         ))}
