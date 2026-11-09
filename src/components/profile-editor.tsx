@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Portrait, ThemeSwitcher } from "@/components/bits"
+import { Portrait, ThemePicker } from "@/components/bits"
 import { actions, getState, useAppState } from "@/lib/store"
 import { compressImage } from "@/lib/image"
 import { formatPhone } from "@/lib/phone"
@@ -175,6 +175,11 @@ export function ProfileEditor() {
             </Field>
           </div>
           <p className="text-xs text-muted-foreground">Нет названия — оставьте поле пустым: тогда на сайте везде будет ваше имя.</p>
+        </Card>
+
+        {/* ——— Оформление: сразу после имени, чтобы не искать в самом низу ——— */}
+        <Card title="Цвета сайта" hint="Нажмите на вариант — сайт сразу перекрасится. Видно и на этой странице.">
+          <ThemePicker />
         </Card>
 
         {/* ——— Фото ——— */}
@@ -348,13 +353,7 @@ export function ProfileEditor() {
               <Input id="pf-vk" value={f.vk ?? ""} onChange={(e) => update({ vk: e.target.value })} placeholder="vk.com/…" className="h-11 rounded-xl" />
             </Field>
           </div>
-        </Card>
-
-        {/* ——— Оформление ——— */}
-        <Card title="Оформление" hint="Меняется сразу, без кнопки «Сохранить».">
-          <ThemeSwitcher />
-        </Card>
-      </div>
+        </Card>      </div>
 
     </section>
   )

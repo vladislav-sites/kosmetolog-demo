@@ -9,7 +9,7 @@ if (!css.length || !js.length) throw new Error("не нашёл ассеты в 
 
 const page = `<title>Косметолог Вера Лаврова</title>
 ${css.map((h) => `<link rel="stylesheet" href="${h}">`).join("\n")}
-<script>document.documentElement.dataset.skin = "milk"</script>
+<script>document.documentElement.dataset.skin = "noir"</script>
 <div id="root"></div>
 ${js.map((s) => `<script type="module" src="${s}"></script>`).join("\n")}
 `

@@ -1,4 +1,5 @@
-export type ThemeId = "milk" | "olive" | "noir"
+/** Порядок: Шоколад (основная), Молоко, Румянец */
+export type ThemeId = "noir" | "milk" | "rose"
 
 export type Service = {
   id: string

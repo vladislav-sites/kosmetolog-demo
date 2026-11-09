@@ -54,7 +54,7 @@ export type AppState = {
 const KEY = "cosmo-app-state"
 const VERSION = 6
 
-const THEME_IDS: ThemeId[] = ["milk", "olive", "noir"]
+const THEME_IDS: ThemeId[] = ["noir", "milk", "rose"]
 
 export const GIFT_MIN = 100
 export const GIFT_MAX = 1_000_000

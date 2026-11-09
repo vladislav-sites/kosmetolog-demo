@@ -86,40 +86,41 @@
   color-scheme: light;
 }
 
-/* ——— «Олива»: натуральный, спокойный ——— */
-[data-skin="olive"] {
-  --background: #f1f0e8;
-  --foreground: #22261c;
-  --card: #f8f7f1;
-  --card-foreground: #22261c;
-  --popover: #f8f7f1;
-  --popover-foreground: #22261c;
-  --primary: #3f4b33;
-  --primary-foreground: #f4f3ea;
-  --secondary: #e3e3d4;
-  --secondary-foreground: #22261c;
-  --muted: #e6e5d8;
-  --muted-foreground: #66695a;
-  --accent: #dfdfcd;
-  --accent-foreground: #22261c;
-  --destructive: #a8432f;
-  --border: #d8d8c7;
-  --input: #cfcfbc;
-  --ring: #8c7448;
-  --clay: #8c7448;
-  --tint: #d9d6bf;
-  --arch-a: #d8dcc6;
-  --arch-b: #8f9a73;
-  --radius: 1.25rem;
-  --glass-bg: rgb(248 247 241 / 0.74);
-  --glass-shadow: rgb(40 50 30 / 0.2);
-  --aurora-1: rgb(200 210 170 / 0.45);
-  --aurora-2: rgb(180 160 110 / 0.25);
-  --aurora-3: rgb(225 228 205 / 0.4);
+/* ——— «Румянец»: Pantone 12-1310 «Зардевшаяся невеста» + сливочный и тёмная ягода ———
+   Розовый — в фоне, плашках и арке; кнопки и текст — глубокий винный, чтобы читалось и не было «пластиком» */
+[data-skin="rose"] {
+  --background: #fbf0f1;
+  --foreground: #3b2329;
+  --card: #fff8f8;
+  --card-foreground: #3b2329;
+  --popover: #fff8f8;
+  --popover-foreground: #3b2329;
+  --primary: #7e3348;
+  --primary-foreground: #fff5f6;
+  --secondary: #f6dfe3;
+  --secondary-foreground: #3b2329;
+  --muted: #f5e3e6;
+  --muted-foreground: #7f5f67;
+  --accent: #f4d9de;
+  --accent-foreground: #3b2329;
+  --destructive: #b03a32;
+  --border: #f0d5da;
+  --input: #e8c8cf;
+  --ring: #b0526b;
+  --clay: #b0526b;
+  --tint: #f7d3da;
+  --arch-a: #f9d5dc;
+  --arch-b: #d98c9e;
+  --radius: 1.1rem;
+  --glass-bg: rgb(255 248 249 / 0.74);
+  --glass-shadow: rgb(120 50 70 / 0.18);
+  --aurora-1: rgb(247 196 208 / 0.5);
+  --aurora-2: rgb(236 168 188 / 0.3);
+  --aurora-3: rgb(253 225 230 / 0.45);
   color-scheme: light;
 }
 
-/* ——— «Ночь»: тёмный премиум, шампань ——— */
+/* ——— «Шоколад»: тёмный премиум, шампань ——— */
 [data-skin="noir"] {
   --background: #121110;
   --foreground: #ece4da;

@@ -85,11 +85,74 @@ export function ServiceRow({ service, index }: { service: Service; index?: numbe
   )
 }
 
-const THEMES: { id: ThemeId; label: string; swatch: string[] }[] = [
-  { id: "milk", label: "Молочное", swatch: ["#f6f1ea", "#a86a4f", "#2f2420"] },
-  { id: "olive", label: "Олива", swatch: ["#f1f0e8", "#8f9a73", "#3f4b33"] },
-  { id: "noir", label: "Ночь", swatch: ["#121110", "#c9a27a", "#e2cdb0"] },
+/** Цвета для превью — те же, что в index.css: фон, текст, кнопка, текст кнопки, акцент, карточка */
+type Palette = { bg: string; fg: string; primary: string; primaryFg: string; accent: string; card: string; tint: string }
+
+const THEMES: { id: ThemeId; label: string; note: string; swatch: string[]; p: Palette }[] = [
+  {
+    id: "noir",
+    label: "Шоколад",
+    note: "тёмная, шампань",
+    swatch: ["#121110", "#c9a27a", "#e2cdb0"],
+    p: { bg: "#121110", fg: "#ece4da", primary: "#e2cdb0", primaryFg: "#1a1714", accent: "#c9a27a", card: "#1b1917", tint: "#2c2621" },
+  },
+  {
+    id: "milk",
+    label: "Молоко",
+    note: "светлая, кофейная",
+    swatch: ["#f6f1ea", "#a86a4f", "#2f2420"],
+    p: { bg: "#f6f1ea", fg: "#2a211d", primary: "#2f2420", primaryFg: "#f8f3ec", accent: "#a86a4f", card: "#fbf8f4", tint: "#e8d5c4" },
+  },
+  {
+    id: "rose",
+    label: "Румянец",
+    note: "нежно-розовая",
+    swatch: ["#fbf0f1", "#f7d3da", "#7e3348"],
+    p: { bg: "#fbf0f1", fg: "#3b2329", primary: "#7e3348", primaryFg: "#fff5f6", accent: "#b0526b", card: "#fff8f8", tint: "#f7d3da" },
+  },
 ]
+
+/** Выбор оформления в кабинете: крупные карточки с мини-превью сайта */
+export function ThemePicker() {
+  const theme = useAppState((s) => s.theme)
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:gap-3" role="radiogroup" aria-label="Оформление сайта">
+      {THEMES.map(({ id, label, note, p }) => {
+        const on = theme === id
+        return (
+          <button
+            key={id}
+            role="radio"
+            aria-checked={on}
+            onClick={() => actions.setTheme(id)}
+            className={cn(
+              "press-soft min-w-0 rounded-[1rem] border p-1.5 text-left transition-colors sm:p-2",
+              on ? "border-foreground ring-1 ring-foreground" : "border-border hover:border-foreground/40",
+            )}
+          >
+            {/* мини-страница: шапка, заголовок, кнопка, плашка */}
+            <span className="block overflow-hidden rounded-[0.7rem] p-2 sm:p-3" style={{ background: p.bg, color: p.fg }}>
+              <span className="flex items-center gap-1">
+                <span className="size-2.5 rounded-full border sm:size-3" style={{ borderColor: p.fg + "33" }} />
+                <span className="h-1 w-6 rounded-full sm:w-8" style={{ background: p.fg, opacity: 0.7 }} />
+              </span>
+              <span className="mt-2.5 block h-1.5 w-[85%] rounded-full sm:mt-3 sm:h-2" style={{ background: p.fg }} />
+              <span className="mt-1 block h-1.5 w-[60%] rounded-full sm:h-2" style={{ background: p.fg }} />
+              <span className="mt-2.5 flex items-center gap-1 sm:mt-3">
+                <span className="h-3.5 w-9 rounded-full sm:h-4 sm:w-12" style={{ background: p.primary }} />
+                <span className="size-2 rounded-full" style={{ background: p.accent }} />
+              </span>
+              <span className="mt-2.5 block h-5 rounded-md sm:mt-3 sm:h-6" style={{ background: p.tint }} />
+            </span>
+            {/* без обрезки «…»: на узком телефоне подпись просто переносится */}
+            <span className="mt-2 block px-0.5 text-[0.8rem] leading-tight font-medium break-words sm:text-sm">{label}</span>
+            <span className="mt-0.5 block px-0.5 text-[0.7rem] leading-tight break-words text-muted-foreground">{on ? "✓ на сайте" : note}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 export function ThemeSwitcher({ compact, className }: { compact?: boolean; className?: string }) {
   const theme = useAppState((s) => s.theme)

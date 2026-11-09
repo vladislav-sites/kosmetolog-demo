@@ -20,7 +20,7 @@ function BookRoute() {
   return <BookPage key={key} />
 }
 
-const THEME_COLOR = { milk: "#f6f1ea", olive: "#f1f0e8", noir: "#121110" } as const
+const THEME_COLOR = { noir: "#121110", milk: "#f6f1ea", rose: "#fbf0f1" } as const
 
 export default function App() {
   const theme = useAppState((s) => s.theme)
