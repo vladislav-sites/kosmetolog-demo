@@ -139,9 +139,10 @@ export function ClientLayout() {
       {!inBooking && (
         <nav
           aria-label="Меню"
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] [view-transition-name:tabbar] lg:hidden"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:hidden"
         >
-          <div className="glass pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-end rounded-[1.75rem] p-1.5">
+          {/* Имя для анимации — именно на стекле, не на обёртке: иначе обёртка «отрезает» стекло от страницы и размытие пропадает */}
+          <div className="glass pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-end rounded-[1.75rem] p-1.5 [view-transition-name:tabbar]">
             {NAV.slice(0, 2).map((n) => (
               <TabLink key={n.to} {...n} />
             ))}

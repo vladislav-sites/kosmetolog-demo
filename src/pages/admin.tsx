@@ -183,9 +183,9 @@ function Cabinet() {
       {/* на телефоне вкладки снизу — под большим пальцем, как на сайте */}
       <nav
         aria-label="Разделы кабинета"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] [view-transition-name:tabbar] lg:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:hidden"
       >
-        <div className="glass pointer-events-auto mx-auto grid max-w-md grid-cols-5 rounded-[1.75rem] p-1.5">
+        <div className="glass pointer-events-auto mx-auto grid max-w-md grid-cols-5 rounded-[1.75rem] p-1.5 [view-transition-name:tabbar]">
           {TABS.map((t) => {
             const count = countOf(t.id)
             const active = tab === t.id
