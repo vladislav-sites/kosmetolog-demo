@@ -4,14 +4,16 @@ import { addDays, isToday, isTomorrow } from "date-fns"
 import { ArrowRight, Gift, MapPin } from "lucide-react"
 import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
-import { SectionTitle, ServiceRow } from "@/components/bits"
-import { useAppState } from "@/lib/store"
+import { cn } from "cn"
+import { Portrait, SectionTitle, ServiceRow } from "@/components/bits"
+import { mapUrl, useAppState } from "@/lib/store"
 import { fmtDayShort, getSlots, plural, price } from "@/lib/time"
 
 const DAYS = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
 
 export default function HomePage() {
   const s = useAppState((st) => st)
+  const p = s.profile
   const consult = s.services.find((x) => x.featured && x.active)
   const services = s.services.filter((x) => x.active && !x.featured)
 
@@ -35,10 +37,10 @@ export default function HomePage() {
       <section className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-8 pb-16 sm:px-6 md:pt-16 md:pb-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
         <div className="min-w-0">
           <p className="eyebrow mb-5">
-            {master.role} · {master.city}
+            {[p.role, p.city].filter(Boolean).join(" · ")}
           </p>
-          <h1 className="font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{master.tagline}</h1>
-          <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed text-muted-foreground">{master.intro}</p>
+          <h1 className="font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{p.tagline}</h1>
+          {p.intro && <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed whitespace-pre-line text-muted-foreground">{p.intro}</p>}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 rounded-full px-7 text-[0.95rem]">
               <Link to={consult ? `/book?service=${consult.id}` : "/book"}>
@@ -50,26 +52,17 @@ export default function HomePage() {
             </Button>
           </div>
           <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-border pt-6">
-            <Fact value={String(master.experienceYears)} label={plural(master.experienceYears, "год практики", "года практики", "лет практики")} />
+            {p.experienceYears > 0 && (
+              <Fact value={String(p.experienceYears)} label={plural(p.experienceYears, "год практики", "года практики", "лет практики")} />
+            )}
             <Fact value="1:1" label="только вы и мастер" />
-            <Fact value={consult ? price(consult.price) : "—"} label="консультация" />
+            {/* выключенная или удалённая консультация = консультация бесплатно */}
+            <Fact value={consult ? price(consult.price) : "Бесплатно"} label="консультация" />
           </dl>
         </div>
 
         <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm lg:max-w-none">
-          <div className="grain arch relative aspect-[4/5] w-full overflow-hidden">
-            {master.portrait && <img src={master.portrait} alt={master.masterName} className="absolute inset-0 size-full object-cover" />}
-            {!master.portrait && (
-              <div className="absolute inset-0 grid place-items-center">
-                <span className="font-heading text-[7rem] leading-none text-white/70 mix-blend-soft-light sm:text-[9rem]">
-                  {master.masterName
-                    .split(" ")
-                    .map((w) => w[0])
-                    .join("")}
-                </span>
-              </div>
-            )}
-          </div>
+          <Portrait src={p.portrait} />
           {nextLabel && (
             <Link
               to={consult ? `/book?service=${consult.id}` : "/book"}
@@ -122,21 +115,25 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ——— Принципы ——— */}
-      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
-        <SectionTitle eyebrow="Как я работаю" title="Три правила кабинета" />
-        <div className="grid gap-8 sm:grid-cols-3">
-          {master.principles.map((p) => (
-            <div key={p.title} className="border-t border-foreground/80 pt-5">
-              <p className="font-heading text-xl">{p.title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.text}</p>
-            </div>
-          ))}
-        </div>
-        <Link to="/about" className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
-          Образование и дипломы <ArrowRight className="size-4" />
-        </Link>
-      </section>
+      {/* ——— Как я работаю (мастер пишет сама, блок скрыт, если пусто) ——— */}
+      {p.principles.length > 0 ? (
+        <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
+          <SectionTitle title="Как я работаю" />
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {p.principles.map((pr, i) => (
+              <div key={i} className="border-t border-foreground/80 pt-5">
+                <p className="font-heading text-xl">{pr.title}</p>
+                {pr.text && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{pr.text}</p>}
+              </div>
+            ))}
+          </div>
+          <Link to="/about" className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
+            Обо мне и образование <ArrowRight className="size-4" />
+          </Link>
+        </section>
+      ) : (
+        <div className="h-14 md:h-20" />
+      )}
 
       {/* ——— Сертификат + адрес ——— */}
       <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-16 sm:px-6 md:grid-cols-2">
@@ -153,10 +150,11 @@ export default function HomePage() {
         <div className="flex flex-col justify-between gap-8 rounded-3xl border border-border bg-card p-7">
           <MapPin className="size-7 text-clay" strokeWidth={1.5} />
           <div>
-            <p className="font-heading text-2xl">
-              {master.city}, {master.address}
-            </p>
-            {master.addressNote && <p className="mt-1 text-sm text-muted-foreground">{master.addressNote}</p>}
+            <p className="font-heading text-2xl">{[p.city, p.address].filter(Boolean).join(", ")}</p>
+            {p.addressNote && <p className="mt-1 text-sm text-muted-foreground">{p.addressNote}</p>}
+            <a href={mapUrl(p)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm underline underline-offset-4 hover:text-clay">
+              Открыть на карте
+            </a>
             <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4, 5, 6, 0].map((d) => (
                 <li key={d} className="flex justify-between gap-2">
@@ -176,7 +174,14 @@ function Fact({ value, label }: { value: string; label: string }) {
   return (
     <div>
       <dt className="sr-only">{label}</dt>
-      <dd className="text-[1.35rem] leading-none font-light tracking-tight whitespace-nowrap tabular-nums">{value}</dd>
+      <dd
+        className={cn(
+          "leading-none font-light tracking-tight whitespace-nowrap tabular-nums",
+          /\d/.test(value) ? "text-[1.35rem]" : "pt-1 text-[1.05rem] font-normal",
+        )}
+      >
+        {value}
+      </dd>
       <dd className="mt-1.5 text-xs text-muted-foreground">{label}</dd>
     </div>
   )

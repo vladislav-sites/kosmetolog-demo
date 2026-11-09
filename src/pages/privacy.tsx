@@ -1,14 +1,16 @@
 import { master } from "@/config/master"
+import { useAppState } from "@/lib/store"
 
 /** Шаблон. Перед запуском на реального мастера текст проверяет юрист. */
 export default function PrivacyPage() {
+  const p = useAppState((s) => s.profile)
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 text-[0.95rem] leading-relaxed sm:px-6 md:py-16">
       <h1 className="font-heading text-4xl">Политика конфиденциальности</h1>
       <p className="mt-2 text-sm text-muted-foreground">Шаблон для демонстрации — перед запуском заменяется проверенным текстом.</p>
       <div className="mt-8 space-y-5">
         <p>
-          Оператор персональных данных — {master.legalName}, {master.city}, {master.address}. Связь: {master.phone}.
+          Оператор персональных данных — {[master.legalName, p.city, p.address].filter(Boolean).join(", ")}.{p.phone && <> Связь: {p.phone}.</>}
         </p>
         <p>
           <b>Какие данные собираем:</b> имя, номер телефона и комментарий, которые вы указываете при записи или заказе сертификата. Сведения о здоровье через

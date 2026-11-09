@@ -47,7 +47,8 @@ export function getSlots(date: Date, duration: number, s: AppState, now = new Da
 
 export const rub = (n: number) => new Intl.NumberFormat("ru-RU").format(n) + " ₽"
 
-export const price = (n: number, from?: boolean) => (from ? "от " : "") + rub(n)
+/** Цена услуги для клиентки: 0 ₽ показываем как «Бесплатно» */
+export const price = (n: number, from?: boolean) => (n === 0 ? "Бесплатно" : (from ? "от " : "") + rub(n))
 
 export function dur(min: number) {
   const h = Math.floor(min / 60)
@@ -84,7 +85,7 @@ export function icsFor(b: Booking, address: string) {
     `DTSTART:${f(st)}`,
     `DTEND:${f(en)}`,
     `SUMMARY:${b.serviceTitle} — ${master.masterName}`,
-    `LOCATION:${master.city}, ${address}`,
+    `LOCATION:${address}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT3H",
     "ACTION:DISPLAY",

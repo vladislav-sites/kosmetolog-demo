@@ -13,6 +13,8 @@ import { NativeSelect } from "@/components/ui/native-select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { actions, useAppState } from "@/lib/store"
 import { dur } from "@/lib/time"
+import { compressImage } from "@/lib/image"
+import { ImagePlus } from "lucide-react"
 
 export const DURATIONS = Array.from({ length: 16 }, (_, i) => 15 + i * 15) // 15 мин … 4 ч
 const NEW_CAT = "__new__"
@@ -43,6 +45,7 @@ type Form = {
   repeatAfterDays: string
   active: boolean
   featured: boolean
+  photo?: string
 }
 
 function toForm(s: Service | undefined, fallbackCat: string): Form {
@@ -64,6 +67,7 @@ function toForm(s: Service | undefined, fallbackCat: string): Form {
     repeatAfterDays: s?.repeatAfterDays ? String(s.repeatAfterDays) : "",
     active: s?.active ?? true,
     featured: s?.featured ?? false,
+    photo: s?.photo,
   }
 }
 
@@ -132,18 +136,32 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
       contraindications: contra.length ? contra : undefined,
       course: sessions && interval ? { sessions, intervalDays: interval } : undefined,
       repeatAfterDays: num(f.repeatAfterDays) || undefined,
-      photo: service?.photo,
+      photo: f.photo,
       active: f.active,
       featured: f.featured || undefined,
     }
-    if (isNew) {
-      actions.addService(data)
-      toast.success(f.active ? "Процедура добавлена — она уже на сайте" : "Процедура добавлена (скрыта с сайта)")
-    } else {
-      actions.updateService(service.id, data)
-      toast.success("Сохранено")
+    const ok = isNew ? !!actions.addService(data) : actions.updateService(service.id, data)
+    if (!ok) {
+      toast.error("Не хватило места для фото. Попробуйте фото поменьше или уберите его.")
+      return
     }
+    toast.success(isNew ? (f.active ? "Процедура добавлена — она уже на сайте" : "Процедура добавлена (скрыта с сайта)") : "Сохранено")
     onClose()
+  }
+
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [busyPhoto, setBusyPhoto] = useState(false)
+  const pickPhoto = async (file?: File) => {
+    if (!file) return
+    setBusyPhoto(true)
+    try {
+      set("photo", await compressImage(file, 1000))
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Не получилось загрузить фото")
+    } finally {
+      setBusyPhoto(false)
+      if (fileRef.current) fileRef.current.value = ""
+    }
   }
 
   const remove = () => {
@@ -188,6 +206,26 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
             />
           )}
         </Field>
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Фото</p>
+          <div className="flex items-center gap-4">
+            <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-tint">
+              {f.photo ? <img src={f.photo} alt="" className="size-full object-cover" /> : <ImagePlus className="size-6 text-muted-foreground" />}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => pickPhoto(e.target.files?.[0])} />
+              <Button variant="outline" size="sm" className="rounded-full bg-transparent" disabled={busyPhoto} onClick={() => fileRef.current?.click()}>
+                {busyPhoto ? "Обрабатываю…" : f.photo ? "Заменить" : "Загрузить фото"}
+              </Button>
+              {f.photo && (
+                <Button variant="ghost" size="sm" className="rounded-full text-destructive hover:text-destructive" onClick={() => set("photo", undefined)}>
+                  Убрать
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <Field id="svc-price" label="Цена, ₽" error={tried ? errors.price : ""}>

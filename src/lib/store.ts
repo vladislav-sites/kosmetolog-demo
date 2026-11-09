@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react"
 import { addDays, format } from "date-fns"
 import { master } from "@/config/master"
-import type { Category, Service, ThemeId, WorkDay } from "@/config/types"
+import type { Category, Profile, Service, ThemeId, WorkDay } from "@/config/types"
 
 /**
  * Слой данных. Сейчас всё хранится в браузере (localStorage) — для демо.
@@ -47,10 +47,12 @@ export type AppState = {
   gifts: GiftRequest[]
   /** Ровно три номинала сертификата, мастер меняет их в кабинете */
   giftAmounts: number[]
+  /** Тексты, фото и контакты — «Моя страница» в кабинете */
+  profile: Profile
 }
 
 const KEY = "cosmo-app-state"
-const VERSION = 4
+const VERSION = 5
 
 const THEME_IDS: ThemeId[] = ["milk", "olive", "noir"]
 
@@ -100,8 +102,33 @@ function initialState(): AppState {
     bookings: master.demo ? demoBookings() : [],
     gifts: [],
     giftAmounts: defaultGiftAmounts(),
+    profile: defaultProfile(),
   }
 }
+
+function defaultProfile(): Profile {
+  return {
+    role: master.role,
+    city: master.city,
+    tagline: master.tagline,
+    intro: master.intro,
+    experienceYears: master.experienceYears,
+    about: [...master.about],
+    education: master.education.map((e) => ({ ...e })),
+    principles: master.principles.map((p) => ({ ...p })),
+    portrait: master.portrait,
+    phone: master.phone,
+    address: master.address,
+    addressNote: master.addressNote,
+    telegram: master.telegram,
+    whatsapp: master.whatsapp,
+    vk: master.vk,
+  }
+}
+
+/** Ссылка на Яндекс Карты строится из города и адреса — отдельно её вводить не нужно */
+export const mapUrl = (p: Pick<Profile, "city" | "address">) =>
+  `https://yandex.ru/maps/?text=${encodeURIComponent(`${p.city}, ${p.address}`)}`
 
 function defaultGiftAmounts() {
   const a = master.giftAmounts.slice(0, 3)
@@ -118,6 +145,8 @@ function migrate(p: AppState): AppState | null {
   if (s.version === 2) s = { ...s, version: 3, giftAmounts: defaultGiftAmounts() }
   // v3 → v4: тогда добавляли тему «Аметист» (потом убрана) — сохранённая тема сбрасывается на основную
   if (s.version === 3) s = { ...s, version: 4, theme: master.theme }
+  // v4 → v5: тексты, фото и контакты стали редактируемыми («Моя страница»)
+  if (s.version === 4) s = { ...s, version: 5, profile: defaultProfile() }
   if (s.version !== VERSION) return null
   // Сохранённая тема могла быть удалена из шаблона (например, «Аметист») — тогда берём основную
   if (!THEME_IDS.includes(s.theme)) s = { ...s, theme: master.theme }
@@ -140,14 +169,25 @@ function load(): AppState {
 let state: AppState = load()
 const listeners = new Set<() => void>()
 
-function commit(next: AppState) {
+/** Возвращает false, если сохранить не удалось (например, кончилось место под фото) */
+function commit(next: AppState): boolean {
   state = next
+  let saved = true
   try {
     localStorage.setItem(KEY, JSON.stringify(state))
   } catch {
-    /* ignore */
+    saved = false
   }
   listeners.forEach((l) => l())
+  return saved
+}
+
+/** Сохранить, а если не вышло — вернуть как было, чтобы на экране не осталось несохранённого */
+function commitOrRollback(next: AppState): boolean {
+  const prev = state
+  if (commit(next)) return true
+  commit(prev)
+  return false
 }
 
 function subscribe(l: () => void) {
@@ -180,24 +220,28 @@ export const actions = {
   setBookingStatus(id: string, status: BookingStatus) {
     commit({ ...state, bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)) })
   },
-  updateService(id: string, patch: Partial<Service>) {
+  /** false — не сохранилось (не хватило места, обычно из-за фото); изменения откатываются */
+  updateService(id: string, patch: Partial<Service>): boolean {
     const unfeature = patch.featured === true
-    commit({
+    return commitOrRollback({
       ...state,
       services: state.services.map((s) => (s.id === id ? { ...s, ...patch } : unfeature ? { ...s, featured: false } : s)),
     })
   },
-  /** Новая процедура встаёт в конец своего раздела */
-  addService(svc: Omit<Service, "id">): Service {
+  /** Новая процедура встаёт в конец своего раздела. null — не сохранилась */
+  addService(svc: Omit<Service, "id">): Service | null {
     const created: Service = { ...svc, id: uid() }
     const list = [...state.services]
     const lastInCat = list.map((s) => s.categoryId).lastIndexOf(svc.categoryId)
     list.splice(lastInCat === -1 ? list.length : lastInCat + 1, 0, created)
-    commit({
+    const ok = commitOrRollback({
       ...state,
       services: created.featured ? list.map((s) => (s.id === created.id ? s : { ...s, featured: false })) : list,
     })
-    return created
+    return ok ? created : null
+  },
+  saveProfile(profile: Profile): boolean {
+    return commitOrRollback({ ...state, profile })
   },
   /** Прошлые и будущие записи хранят название и цену сами, поэтому удаление их не ломает */
   deleteService(id: string) {

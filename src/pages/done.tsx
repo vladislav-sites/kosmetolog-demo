@@ -1,8 +1,8 @@
 import { Link, useParams } from "react-router"
 import { CalendarPlus, Check, MapPin, MessageCircle } from "lucide-react"
-import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { useAppState } from "@/lib/store"
+import { telegramUrl } from "@/lib/links"
 import { IS_EMBED } from "@/lib/env"
 import { dur, fmtDay, icsFor, parseLocal, price } from "@/lib/time"
 
@@ -10,6 +10,7 @@ export default function DonePage() {
   const { id } = useParams()
   const bookings = useAppState((s) => s.bookings)
   const services = useAppState((s) => s.services)
+  const profile = useAppState((s) => s.profile)
   const b = bookings.find((x) => x.id === id)
   if (!b)
     return (
@@ -25,7 +26,7 @@ export default function DonePage() {
   const start = parseLocal(b.start)
 
   const downloadIcs = () => {
-    const blob = new Blob([icsFor(b, master.address)], { type: "text/calendar;charset=utf-8" })
+    const blob = new Blob([icsFor(b, [profile.city, profile.address].filter(Boolean).join(", "))], { type: "text/calendar;charset=utf-8" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
@@ -56,10 +57,7 @@ export default function DonePage() {
           </div>
           <div className="flex items-start gap-2 text-muted-foreground">
             <MapPin className="mt-0.5 size-4 shrink-0" />
-            <span>
-              {master.city}, {master.address}
-              {master.addressNote && <>, {master.addressNote}</>}
-            </span>
+            <span>{[profile.city, profile.address, profile.addressNote].filter(Boolean).join(", ")}</span>
           </div>
         </div>
       </div>
@@ -81,9 +79,9 @@ export default function DonePage() {
             <CalendarPlus /> В календарь
           </Button>
         )}
-        {master.telegram && (
+        {profile.telegram && (
           <Button asChild variant="outline" size="lg" className="h-12 rounded-full bg-transparent">
-            <a href={`https://t.me/${master.telegram}`} target="_blank" rel="noreferrer">
+            <a href={telegramUrl(profile.telegram)} target="_blank" rel="noreferrer">
               <MessageCircle /> Написать мне
             </a>
           </Button>

@@ -1,19 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/manrope";
-@import "@fontsource/prata/cyrillic-400.css";
-@import "@fontsource/prata/latin-400.css";
-@import "@fontsource-variable/lora/wght-italic.css";
-@import "@fontsource-variable/lora";
-@import "@fontsource/tenor-sans/cyrillic-400.css";
-@import "@fontsource/tenor-sans/latin-400.css";
+/* Один шрифт на всё — Onest: сделан для российских сервисов, кириллица в нём «родная» */
+@import "@fontsource-variable/onest";
 
 @custom-variant dark (&:is([data-skin="noir"] *));
 
 @theme inline {
   --font-heading: var(--heading);
-  --font-sans: "Manrope Variable", system-ui, sans-serif;
+  --font-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -46,10 +41,10 @@
 /* ——— Оформление «Молочное»: тёплая бумага, эспрессо, глина ——— */
 :root,
 [data-skin="milk"] {
-  --heading: "Prata", Georgia, serif;
+  --heading: "Onest Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
   --heading-style: normal;
   --heading-case: none;
-  --heading-track: -0.01em;
+  --heading-track: -0.025em;
   --background: #f6f1ea;
   --foreground: #2a211d;
   --card: #fbf8f4;
@@ -73,7 +68,7 @@
   --arch-a: #e9d3c0;
   --arch-b: #c99b80;
   --radius: 0.9rem;
-  --heading-weight: 400;
+  --heading-weight: 500;
   /* стекло */
   --glass-bg: rgb(251 248 244 / 0.55);
   --glass-border: rgb(255 255 255 / 0.65);
@@ -92,10 +87,6 @@
 
 /* ——— «Олива»: натуральный, спокойный ——— */
 [data-skin="olive"] {
-  --heading: "Lora Variable", Georgia, serif;
-  --heading-style: italic;
-  --heading-case: none;
-  --heading-track: -0.015em;
   --background: #f1f0e8;
   --foreground: #22261c;
   --card: #f8f7f1;
@@ -129,11 +120,6 @@
 
 /* ——— «Ночь»: тёмный премиум, шампань ——— */
 [data-skin="noir"] {
-  --heading: "Tenor Sans", "Helvetica Neue", sans-serif;
-  --heading-style: normal;
-  /* заглавными длинные русские слова не помещаются в телефон — обычный регистр */
-  --heading-case: none;
-  --heading-track: 0.01em;
   --background: #121110;
   --foreground: #ece4da;
   --card: #1b1917;
@@ -202,9 +188,10 @@
     text-transform: var(--heading-case);
     letter-spacing: var(--heading-track);
     font-weight: var(--heading-weight, 400);
-    /* длинные русские слова («Комбинированная») не должны вылезать за экран */
+    /* Переносы с дефисом («спеш-ки») в заголовках выглядят как сбой — без них.
+       Слово рвётся только если физически не помещается в строку. */
     overflow-wrap: break-word;
-    hyphens: auto;
+    hyphens: manual;
   }
 }
 

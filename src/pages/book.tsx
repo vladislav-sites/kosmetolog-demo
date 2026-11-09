@@ -21,6 +21,7 @@ export default function BookPage() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const state = useAppState((s) => s)
+  const profile = state.profile
   const services = state.services.filter((s) => s.active)
 
   const pre = services.find((s) => s.id === params.get("service"))
@@ -230,7 +231,7 @@ export default function BookPage() {
           <div className="mt-8 rounded-2xl border border-border bg-card p-5 text-sm">
             <Row k="Процедура" v={service.title} />
             <Row k="Когда" v={`${fmtDay(date)}, ${time}`} />
-            <Row k="Где" v={`${master.address}`} />
+            <Row k="Где" v={profile.address} />
             <Row k="Стоимость" v={price(service.price, service.priceFrom)} strong />
             <p className="mt-3 text-xs text-muted-foreground">Оплата на месте. Если планы поменяются — предупредите, пожалуйста, за сутки.</p>
           </div>

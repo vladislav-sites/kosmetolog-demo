@@ -31,6 +31,26 @@ export type Category = { id: string; title: string; description: string }
 
 export type WorkDay = { enabled: boolean; from: string; to: string }
 
+/** То, что мастер сама меняет в кабинете → «Моя страница» */
+export type Profile = {
+  role: string
+  city: string
+  tagline: string
+  intro: string
+  experienceYears: number
+  about: string[]
+  education: { year: string; title: string; place: string }[]
+  principles: { title: string; text: string }[]
+  /** Фото мастера (сжатое, data URL) */
+  portrait?: string
+  phone: string
+  address: string
+  addressNote?: string
+  telegram?: string
+  whatsapp?: string
+  vk?: string
+}
+
 export type MasterConfig = {
   brand: string
   masterName: string

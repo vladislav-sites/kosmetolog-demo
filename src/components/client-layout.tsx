@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Disclaimer, Monogram, ThemeSwitcher } from "@/components/bits"
 import { InstallHint } from "@/components/install-hint"
 import { IS_EMBED } from "@/lib/env"
+import { mapUrl, useAppState } from "@/lib/store"
+import { telegramUrl, vkUrl } from "@/lib/links"
 
 const NAV = [
   { to: "/", label: "Главная", icon: Home, end: true },
@@ -17,6 +19,7 @@ const NAV = [
 
 export function ClientLayout() {
   const { pathname } = useLocation()
+  const p = useAppState((s) => s.profile)
   const [demoOpen, setDemoOpen] = useState(true)
   const inBooking = pathname.startsWith("/book")
 
@@ -45,7 +48,7 @@ export function ClientLayout() {
             <Monogram />
             <span className="leading-tight whitespace-nowrap">
               <span className="block font-heading text-[1.05rem]">{master.brand}</span>
-              <span className="block text-[0.7rem] text-muted-foreground">{master.role}</span>
+              <span className="block text-[0.7rem] text-muted-foreground">{p.role}</span>
             </span>
           </Link>
           <nav className="ml-auto hidden items-center gap-1 lg:flex">
@@ -79,39 +82,37 @@ export function ClientLayout() {
               <Monogram />
               <span className="font-heading text-lg">{master.brand}</span>
             </div>
-            <p className="mt-4 max-w-xs text-sm text-muted-foreground">{master.tagline}</p>
+            <p className="mt-4 max-w-xs text-sm text-muted-foreground">{p.tagline}</p>
             <Disclaimer className="mt-4 max-w-xs" />
           </div>
           <div className="text-sm">
             <p className="eyebrow mb-3">Адрес</p>
-            <p>
-              {master.city}, {master.address}
-            </p>
-            {master.addressNote && <p className="text-muted-foreground">{master.addressNote}</p>}
-            {master.mapUrl && (
-              <a href={master.mapUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block underline underline-offset-4 hover:text-clay">
-                Открыть на карте
-              </a>
-            )}
+            <p>{[p.city, p.address].filter(Boolean).join(", ")}</p>
+            {p.addressNote && <p className="text-muted-foreground">{p.addressNote}</p>}
+            <a href={mapUrl(p)} target="_blank" rel="noreferrer" className="mt-2 inline-block underline underline-offset-4 hover:text-clay">
+              Открыть на карте
+            </a>
           </div>
           <div className="text-sm">
             <p className="eyebrow mb-3">Связь</p>
-            <a href={`tel:${master.phone.replace(/[^\d+]/g, "")}`} className="block hover:text-clay">
-              {master.phone}
-            </a>
+            {p.phone && (
+              <a href={`tel:${p.phone.replace(/[^\d+]/g, "")}`} className="block hover:text-clay">
+                {p.phone}
+              </a>
+            )}
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              {master.telegram && (
-                <a href={`https://t.me/${master.telegram}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-clay">
+              {p.telegram && (
+                <a href={telegramUrl(p.telegram)} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-clay">
                   Telegram
                 </a>
               )}
-              {master.whatsapp && (
-                <a href={`https://wa.me/${master.whatsapp}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-clay">
+              {p.whatsapp && (
+                <a href={`https://wa.me/${p.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-clay">
                   WhatsApp
                 </a>
               )}
-              {master.vk && (
-                <a href={`https://vk.com/${master.vk}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-clay">
+              {p.vk && (
+                <a href={vkUrl(p.vk)} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-clay">
                   ВКонтакте
                 </a>
               )}

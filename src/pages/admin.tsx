@@ -29,8 +29,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { NativeSelect } from "@/components/ui/native-select"
-import { Monogram, ThemeSwitcher } from "@/components/bits"
+import { Monogram } from "@/components/bits"
 import { DURATIONS, ServiceEditor } from "@/components/service-editor"
+import { ProfileEditor } from "@/components/profile-editor"
 import type { Category, Service } from "@/config/types"
 import { actions, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
 import { bookingEnd, dayKey, dur, fromMin, parseLocal, rub } from "@/lib/time"
@@ -98,9 +99,9 @@ const TABS = [
   { id: "day", label: "Записи", icon: CalendarDays },
   { id: "repeat", label: "Позвать снова", icon: BellRing },
   { id: "services", label: "Процедуры", icon: Sparkles },
+  { id: "page", label: "Моя страница", icon: Palette },
   { id: "hours", label: "График", icon: Clock },
   { id: "gifts", label: "Сертификаты", icon: Gift },
-  { id: "look", label: "Оформление", icon: Palette },
 ] as const
 type TabId = (typeof TABS)[number]["id"]
 
@@ -168,15 +169,7 @@ function Cabinet() {
         {tab === "services" && <ServicesTab />}
         {tab === "hours" && <HoursTab />}
         {tab === "gifts" && <GiftsTab />}
-        {tab === "look" && (
-          <section>
-            <h2 className="font-heading text-2xl">Оформление</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Меняется сразу у всех клиенток.</p>
-            <div className="mt-5">
-              <ThemeSwitcher />
-            </div>
-          </section>
-        )}
+        {tab === "page" && <ProfileEditor />}
       </main>
     </div>
   )

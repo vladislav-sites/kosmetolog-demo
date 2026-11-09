@@ -24,6 +24,25 @@ export function Monogram({ className }: { className?: string }) {
   )
 }
 
+/** Фото мастера в арке. Пока фото нет — инициалы на градиенте. */
+export function Portrait({ src, className }: { src?: string; className?: string }) {
+  const initials = master.masterName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+  return (
+    <div className={cn("grain arch relative aspect-[4/5] w-full overflow-hidden", className)}>
+      {src ? (
+        <img src={src} alt={master.masterName} className="absolute inset-0 size-full object-cover" />
+      ) : (
+        <span className="absolute inset-0 grid place-items-center font-heading text-[7rem] leading-none text-white/70 mix-blend-soft-light sm:text-[9rem]">
+          {initials}
+        </span>
+      )}
+    </div>
+  )
+}
+
 export function SectionTitle({ eyebrow, title, children, className }: { eyebrow?: string; title: string; children?: React.ReactNode; className?: string }) {
   return (
     <div className={cn("mb-6 max-w-2xl", className)}>
