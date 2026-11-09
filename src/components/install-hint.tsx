@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Share, SquarePlus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { master } from "@/config/master"
+import { brandOf, useAppState } from "@/lib/store"
 
 type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
@@ -9,6 +9,7 @@ const KEY = "cosmo-install-dismissed"
 
 /** Подсказка «добавить на экран» — превращает ссылку в иконку-приложение */
 export function InstallHint() {
+  const brand = useAppState((s) => brandOf(s.profile))
   const [deferred, setDeferred] = useState<BIPEvent | null>(null)
   const [show, setShow] = useState(false)
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -52,7 +53,7 @@ export function InstallHint() {
       <div className="glass flex items-start gap-3 rounded-2xl p-4">
         <SquarePlus className="mt-0.5 size-5 shrink-0 text-clay" />
         <div className="min-w-0 flex-1 text-sm">
-          <p className="font-medium">Добавьте {master.brand} на экран</p>
+          <p className="font-medium">Добавьте {brand} на экран</p>
           {deferred ? (
             <p className="mt-1 text-muted-foreground">Записываться можно будет в одно касание, как в приложении.</p>
           ) : (

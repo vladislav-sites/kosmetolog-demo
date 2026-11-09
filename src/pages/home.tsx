@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "cn"
 import { Portrait, SectionTitle, ServiceRow } from "@/components/bits"
 import { mapUrl, useAppState } from "@/lib/store"
-import { fmtDayShort, getSlots, plural, price } from "@/lib/time"
+import { dayKey, fmtDayShort, getSlots, plural, price } from "@/lib/time"
 
 const DAYS = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
 
@@ -65,7 +65,7 @@ export default function HomePage() {
           <Portrait src={p.portrait} />
           {nextLabel && (
             <TLink
-              to={consult ? `/book?service=${consult.id}` : "/book"}
+              to={`/book?service=${consult!.id}&at=${dayKey(nextSlot!.d)}T${nextSlot!.time}`}
               morph
               className="glass press absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
             >

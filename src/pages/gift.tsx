@@ -2,17 +2,17 @@ import { useState } from "react"
 import { TLink } from "@/components/tlink"
 import { Check, Gift } from "lucide-react"
 import { cn } from "cn"
-import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Consent } from "@/components/consent"
-import { actions, useAppState } from "@/lib/store"
+import { actions, brandOf, useAppState } from "@/lib/store"
 import { rub } from "@/lib/time"
 import { formatPhone, phoneValid } from "@/lib/phone"
 
 export default function GiftPage() {
   const amounts = useAppState((s) => s.giftAmounts)
+  const profile = useAppState((s) => s.profile)
   const [picked, setPicked] = useState(1)
   const amount = amounts[picked] ?? amounts[0]
   const [forName, setForName] = useState("")
@@ -23,10 +23,16 @@ export default function GiftPage() {
   const [sent, setSent] = useState(false)
 
   const submit = () => {
+    if (sent) return
     setTried(true)
-    if (!name.trim() || !phoneValid(phone) || !consent) return
+    if (!name.trim() || !phoneValid(phone) || !consent) {
+      requestAnimationFrame(() => document.querySelector("[data-error]")?.scrollIntoView({ block: "center", behavior: "smooth" }))
+      return
+    }
     actions.addGift({ amount, buyerName: name.trim(), phone, forName: forName.trim() || undefined })
     setSent(true)
+    // форма исчезает — показываем «Заявка отправлена», а не пустое место под ней
+    requestAnimationFrame(() => document.getElementById("gift-sent")?.scrollIntoView({ block: "center", behavior: "smooth" }))
   }
 
   return (
@@ -49,10 +55,11 @@ export default function GiftPage() {
               >
                 {rub(amount)}
               </p>
-              <p className="mt-2 text-sm opacity-80">{forName.trim() ? `для ${forName.trim()}` : "на любые процедуры"}</p>
+              {/* «Кому: Анна», а не «для Анна» — имя вводят в именительном падеже */}
+              <p className="mt-2 text-sm break-words opacity-80">{forName.trim() ? `Кому: ${forName.trim()}` : "на любые процедуры"}</p>
             </div>
             <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 text-xs opacity-80">
-              <span className="font-heading text-base">{master.brand}</span>
+              <span className="font-heading text-base">{brandOf(profile)}</span>
               <span>действует 6 месяцев</span>
             </div>
           </div>
@@ -66,7 +73,7 @@ export default function GiftPage() {
         <p className="mt-4 text-muted-foreground">Можно подарить сумму — получатель сам выберет процедуру после консультации.</p>
 
         {sent ? (
-          <div className="mt-10 rounded-2xl border border-border bg-card p-6 animate-in fade-in">
+          <div id="gift-sent" className="mt-10 scroll-mb-28 rounded-2xl border border-border bg-card p-6 animate-in fade-in">
             <div className="grid size-12 place-items-center rounded-full bg-primary text-primary-foreground">
               <Check className="size-5" />
             </div>
@@ -99,27 +106,37 @@ export default function GiftPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>
+              <Label htmlFor="gift-for">
                 Кому <span className="text-xs font-normal text-muted-foreground">необязательно</span>
               </Label>
-              <Input value={forName} onChange={(e) => setForName(e.target.value)} placeholder="Имя получателя" className="h-12 rounded-xl bg-card text-base" />
+              <Input id="gift-for" value={forName} onChange={(e) => setForName(e.target.value)} placeholder="Имя получателя" className="h-12 rounded-xl bg-card text-base" />
             </div>
             <div className="space-y-2">
-              <Label>Ваше имя</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="h-12 rounded-xl bg-card text-base" />
-              {tried && !name.trim() && <p className="text-xs text-destructive">Как к вам обращаться?</p>}
+              <Label htmlFor="gift-name">Ваше имя</Label>
+              <Input id="gift-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" className="h-12 rounded-xl bg-card text-base" />
+              {tried && !name.trim() && (
+                <p data-error className="text-xs text-destructive">
+                  Как к вам обращаться?
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label>Телефон</Label>
+              <Label htmlFor="gift-phone">Телефон</Label>
               <Input
+                id="gift-phone"
+                type="tel"
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
-                onFocus={() => !phone && setPhone("+7")}
                 inputMode="tel"
+                autoComplete="tel"
                 placeholder="+7 (900) 000-00-00"
                 className="h-12 rounded-xl bg-card text-base tabular-nums"
               />
-              {tried && !phoneValid(phone) && <p className="text-xs text-destructive">Проверьте номер</p>}
+              {tried && !phoneValid(phone) && (
+                <p data-error className="text-xs text-destructive">
+                  Проверьте номер
+                </p>
+              )}
             </div>
             <Consent checked={consent} onChange={setConsent} error={tried && !consent} />
             <Button size="lg" className="h-12 w-full rounded-full sm:w-auto sm:px-8" onClick={submit}>

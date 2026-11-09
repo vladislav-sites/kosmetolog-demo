@@ -129,7 +129,7 @@ function Cabinet() {
           </Link>
           <div className="min-w-0 leading-tight">
             <p className="text-[0.7rem] text-muted-foreground">Кабинет</p>
-            <p className="truncate font-heading text-[1.05rem]">{master.masterName}</p>
+            <p className="truncate font-heading text-[1.05rem]">{s.profile.name}</p>
           </div>
           {master.demo && (
             <Button
@@ -227,7 +227,8 @@ const STATUS: Record<BookingStatus, { label: string; cls: string }> = {
 function DayTab() {
   const s = useAppState((st) => st)
   const [day, setDay] = useState(startOfDay(new Date()))
-  const days = Array.from({ length: 21 }, (_, i) => addDays(startOfDay(new Date()), i))
+  // столько же дней, сколько открыто для записи на сайте — иначе дальние записи не видно
+  const days = Array.from({ length: master.bookingHorizonDays + 1 }, (_, i) => addDays(startOfDay(new Date()), i))
 
   const list = s.bookings
     .filter((b) => isSameDay(parseLocal(b.start), day))
@@ -249,7 +250,11 @@ function DayTab() {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <Kpi label="Сегодня" value={String(todayCount)} hint="записей" />
         <Kpi label="7 дней" value={rub(weekRevenue)} hint="ожидается" />
-        <Kpi label="Новые" value={String(s.bookings.filter((b) => b.status === "new").length)} hint="подтвердить" />
+        <Kpi
+          label="Новые"
+          value={String(s.bookings.filter((b) => b.status === "new" && parseLocal(b.start) >= startOfDay(new Date())).length)}
+          hint="подтвердить"
+        />
       </div>
 
       <div className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0">
@@ -358,8 +363,12 @@ function BookingCard({ b }: { b: Booking }) {
               variant="ghost"
               className="rounded-full text-destructive hover:text-destructive"
               onClick={() => {
+                const prev = b.status
                 actions.setBookingStatus(b.id, "cancelled")
-                toast("Запись отменена — время снова свободно")
+                // промахнулась пальцем — можно вернуть
+                toast("Запись отменена — время снова свободно", {
+                  action: { label: "Вернуть", onClick: () => actions.setBookingStatus(b.id, prev) },
+                })
               }}
             >
               <X /> Отменить
@@ -551,9 +560,10 @@ function HoursTab() {
               <span className={cn("w-32 text-sm font-medium", !w.enabled && "text-muted-foreground")}>{DAY_NAMES[d]}</span>
               {w.enabled ? (
                 <div className="ml-auto flex items-center gap-2">
-                  <TimeSelect label={`${DAY_NAMES[d]}: начало`} value={w.from} onChange={(v) => actions.setWorkDay(d, { from: v })} />
+                  {/* конец не раньше начала — иначе день молча пропадает из записи */}
+                  <TimeSelect label={`${DAY_NAMES[d]}: начало`} value={w.from} disable={(t) => t >= w.to} onChange={(v) => actions.setWorkDay(d, { from: v })} />
                   <span className="text-muted-foreground">—</span>
-                  <TimeSelect label={`${DAY_NAMES[d]}: конец`} value={w.to} onChange={(v) => actions.setWorkDay(d, { to: v })} />
+                  <TimeSelect label={`${DAY_NAMES[d]}: конец`} value={w.to} disable={(t) => t <= w.from} onChange={(v) => actions.setWorkDay(d, { to: v })} />
                 </div>
               ) : (
                 <span className="ml-auto text-sm text-muted-foreground">выходной</span>
@@ -566,11 +576,11 @@ function HoursTab() {
   )
 }
 
-function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+function TimeSelect({ value, onChange, label, disable }: { value: string; onChange: (v: string) => void; label: string; disable: (t: string) => boolean }) {
   return (
     <NativeSelect value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} wrapperClassName="w-24" className="h-9 tabular-nums">
       {TIMES.map((t) => (
-        <option key={t} value={t}>
+        <option key={t} value={t} disabled={t !== value && disable(t)}>
           {t}
         </option>
       ))}
@@ -633,16 +643,17 @@ function GiftsTab() {
           </p>
         )}
         {[...gifts].reverse().map((g) => (
-          <div key={g.id} className={cn("flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-4", g.status === "done" && "opacity-60")}>
-            <div className="grid size-11 place-items-center rounded-xl bg-tint">
+          <div key={g.id} className={cn("flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border bg-card p-4", g.status === "done" && "opacity-60")}>
+            <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-tint">
               <Gift className="size-5 text-clay" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium tabular-nums">
-                {rub(g.amount)} {g.forName && <span className="font-normal text-muted-foreground">для {g.forName}</span>}
-              </p>
+            {/* min-w: на узком экране кнопка уходит на свою строку, а не сжимает текст */}
+            <div className="min-w-[11rem] flex-1">
+              <p className="font-medium tabular-nums">{rub(g.amount)}</p>
+              {g.forName && <p className="text-sm break-words">Кому: {g.forName}</p>}
               <p className="text-sm text-muted-foreground">
-                {g.buyerName}, {g.phone} · {format(new Date(g.createdAt), "d MMM, HH:mm", { locale: ru })}
+                {g.buyerName}, <span className="whitespace-nowrap">{g.phone}</span> ·{" "}
+                <span className="whitespace-nowrap">{format(new Date(g.createdAt), "d MMM, HH:mm", { locale: ru })}</span>
               </p>
             </div>
             {g.status === "new" ? (

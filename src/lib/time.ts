@@ -53,9 +53,10 @@ export const price = (n: number, from?: boolean) => (n === 0 ? "Бесплатн
 export function dur(min: number) {
   const h = Math.floor(min / 60)
   const m = min % 60
-  if (!h) return `${m} мин`
-  if (!m) return `${h} ч`
-  return `${h} ч ${m} мин`
+  // неразрывные пробелы: «40 / мин» не должно разъезжаться по строкам
+  if (!h) return `${m} мин`
+  if (!m) return `${h} ч`
+  return `${h} ч ${m} мин`
 }
 
 export const fmtDay = (d: Date) => format(d, "d MMMM, EEEE", { locale: ru })
@@ -71,21 +72,24 @@ export function plural(n: number, one: string, few: string, many: string) {
 }
 
 /** Файл .ics, чтобы клиентка добавила визит в свой календарь */
-export function icsFor(b: Booking, address: string) {
+export function icsFor(b: Booking, address: string, masterName: string) {
   const st = parseLocal(b.start)
   const en = bookingEnd(b)
   const f = (d: Date) => format(d, "yyyyMMdd'T'HHmmss")
+  // DTSTAMP по стандарту — в UTC; запятые и ; в тексте экранируются, иначе календарь режет адрес
+  const utc = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")
+  const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\n/g, "\\n")
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//cosmo-app//RU",
     "BEGIN:VEVENT",
     `UID:${b.id}@cosmo-app`,
-    `DTSTAMP:${f(new Date())}`,
+    `DTSTAMP:${utc}`,
     `DTSTART:${f(st)}`,
     `DTEND:${f(en)}`,
-    `SUMMARY:${b.serviceTitle} — ${master.masterName}`,
-    `LOCATION:${address}`,
+    `SUMMARY:${esc(`${b.serviceTitle} — ${masterName}`)}`,
+    `LOCATION:${esc(address)}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT3H",
     "ACTION:DISPLAY",

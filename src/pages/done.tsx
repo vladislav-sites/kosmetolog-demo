@@ -29,13 +29,16 @@ export default function DonePage() {
   const start = parseLocal(b.start)
 
   const downloadIcs = () => {
-    const blob = new Blob([icsFor(b, [profile.city, profile.address].filter(Boolean).join(", "))], { type: "text/calendar;charset=utf-8" })
+    const blob = new Blob([icsFor(b, [profile.city, profile.address].filter(Boolean).join(", "), profile.name)], { type: "text/calendar;charset=utf-8" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
     a.download = "zapis.ics"
+    document.body.append(a)
     a.click()
-    URL.revokeObjectURL(url)
+    a.remove()
+    // Safari не успевает забрать файл, если ссылку отозвать сразу
+    setTimeout(() => URL.revokeObjectURL(url), 10_000)
   }
 
   return (
@@ -65,7 +68,7 @@ export default function DonePage() {
         </div>
       </div>
 
-      {svc?.prep && (
+      {!!svc?.prep?.length && (
         <div className="mt-6 rounded-2xl border border-border p-5">
           <p className="font-medium">Перед визитом</p>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">

@@ -1,5 +1,6 @@
-import { useLayoutEffect, useMemo, useState } from "react"
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
+import { toast } from "sonner"
 import { addDays, startOfDay } from "date-fns"
 import { ru } from "react-day-picker/locale"
 import { ArrowLeft, Check, Clock } from "lucide-react"
@@ -11,8 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Consent } from "@/components/consent"
-import { actions, useAppState } from "@/lib/store"
-import { dayKey, dur, fmtDay, getSlots, price } from "@/lib/time"
+import { actions, getState, useAppState } from "@/lib/store"
+import { dayKey, dur, fmtDay, getSlots, parseLocal, price } from "@/lib/time"
 import { formatPhone, phoneValid } from "@/lib/phone"
 import { tap, withTransition } from "@/lib/transition"
 
@@ -26,10 +27,20 @@ export default function BookPage() {
   const services = state.services.filter((s) => s.active)
 
   const pre = services.find((s) => s.id === params.get("service"))
+  // ?at=2026-11-10T10:00 — из плашки «Ближайшее окно»: сразу отмечаем этот день и время, если оно ещё свободно
+  const [preset] = useState(() => {
+    const at = params.get("at")
+    if (!pre || !at) return undefined
+    const d = parseLocal(at)
+    const t = at.slice(11, 16)
+    return getSlots(d, pre.duration, state).includes(t) ? { date: startOfDay(d), time: t } : undefined
+  })
   const [serviceId, setServiceId] = useState<string | undefined>(pre?.id)
   const [step, setStep] = useState<Step>(pre ? 1 : 0)
-  const [date, setDate] = useState<Date | undefined>()
-  const [time, setTime] = useState<string | undefined>()
+  const [date, setDate] = useState<Date | undefined>(preset?.date)
+  const [time, setTime] = useState<string | undefined>(preset?.time)
+  const sending = useRef(false)
+  const uid = useId()
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [comment, setComment] = useState("")
@@ -59,11 +70,20 @@ export default function BookPage() {
   }, [step])
 
   const submit = () => {
+    if (sending.current) return // двойное касание не создаёт вторую запись
     setTried(true)
     if (!service || !date || !time || !name.trim() || !phoneValid(phone) || !consent) {
       requestAnimationFrame(() => document.querySelector("[data-error]")?.scrollIntoView({ block: "center", behavior: "smooth" }))
       return
     }
+    // Пока заполняли контакты, время могло пройти или его заняли
+    if (!getSlots(date, service.duration, getState()).includes(time)) {
+      toast.error("Это время уже недоступно — выберите другое")
+      setTime(undefined)
+      goStep(1)
+      return
+    }
+    sending.current = true
     const b = actions.addBooking({
       serviceId: service.id,
       serviceTitle: service.title,
@@ -173,6 +193,7 @@ export default function BookPage() {
                     <button
                       key={t}
                       onClick={() => setTime(t)}
+                      aria-pressed={time === t}
                       className={cn(
                         "press h-11 rounded-xl border text-sm tabular-nums",
                         time === t ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40",
@@ -208,8 +229,9 @@ export default function BookPage() {
           />
           <h1 className="mt-8 font-heading text-3xl sm:text-4xl">Как с вами связаться?</h1>
           <div className="mt-6 space-y-5">
-            <Field label="Имя" error={tried && !name.trim() ? "Как к вам обращаться?" : undefined}>
+            <Field id={`${uid}-name`} label="Имя" error={tried && !name.trim() ? "Как к вам обращаться?" : undefined}>
               <Input
+                id={`${uid}-name`}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="given-name"
@@ -217,19 +239,21 @@ export default function BookPage() {
                 className="h-12 rounded-xl bg-card text-base"
               />
             </Field>
-            <Field label="Телефон" error={tried && !phoneValid(phone) ? "Проверьте номер" : undefined}>
+            <Field id={`${uid}-phone`} label="Телефон" error={tried && !phoneValid(phone) ? "Проверьте номер" : undefined}>
               <Input
+                id={`${uid}-phone`}
+                type="tel"
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
-                onFocus={() => !phone && setPhone("+7")}
                 inputMode="tel"
                 autoComplete="tel"
                 placeholder="+7 (900) 000-00-00"
                 className="h-12 rounded-xl bg-card text-base tabular-nums"
               />
             </Field>
-            <Field label="Комментарий" hint="необязательно">
+            <Field id={`${uid}-comment`} label="Комментарий" hint="необязательно">
               <Textarea
+                id={`${uid}-comment`}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Например: первый раз, хочу разобраться с высыпаниями"
@@ -272,10 +296,10 @@ function SelectedService({ title, meta, onChange, changeLabel = "Изменит�
   )
 }
 
-function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
+function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <Label className="flex items-baseline gap-2">
+      <Label htmlFor={id} className="flex items-baseline gap-2">
         {label}
         {hint && <span className="text-xs font-normal text-muted-foreground">{hint}</span>}
       </Label>

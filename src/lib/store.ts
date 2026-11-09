@@ -52,7 +52,7 @@ export type AppState = {
 }
 
 const KEY = "cosmo-app-state"
-const VERSION = 5
+const VERSION = 6
 
 const THEME_IDS: ThemeId[] = ["milk", "olive", "noir"]
 
@@ -108,6 +108,8 @@ function initialState(): AppState {
 
 function defaultProfile(): Profile {
   return {
+    name: master.masterName,
+    brand: master.brand?.trim() || undefined,
     role: master.role,
     city: master.city,
     tagline: master.tagline,
@@ -125,6 +127,17 @@ function defaultProfile(): Profile {
     vk: master.vk,
   }
 }
+
+/** Как подписывать сайт: название студии, а если его нет — имя мастера */
+export const brandOf = (p: Pick<Profile, "name" | "brand">) => p.brand || p.name
+
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("")
 
 /** Ссылка на Яндекс Карты строится из города и адреса — отдельно её вводить не нужно */
 export const mapUrl = (p: Pick<Profile, "city" | "address">) =>
@@ -147,6 +160,9 @@ function migrate(p: AppState): AppState | null {
   if (s.version === 3) s = { ...s, version: 4, theme: master.theme }
   // v4 → v5: тексты, фото и контакты стали редактируемыми («Моя страница»)
   if (s.version === 4) s = { ...s, version: 5, profile: defaultProfile() }
+  // v5 → v6: имя мастера и название студии тоже правятся в кабинете
+  if (s.version === 5)
+    s = { ...s, version: 6, profile: { ...s.profile, name: master.masterName, brand: master.brand?.trim() || undefined } }
   if (s.version !== VERSION) return null
   // Сохранённая тема могла быть удалена из шаблона (например, «Аметист») — тогда берём основную
   if (!THEME_IDS.includes(s.theme)) s = { ...s, theme: master.theme }

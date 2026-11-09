@@ -45,11 +45,12 @@ export function ClientLayout() {
 
       <header className="glass-bar sticky top-0 z-30 [view-transition-name:site-header]">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
-          <TLink to="/" className="flex items-center gap-3">
-            <Monogram />
-            <span className="leading-tight whitespace-nowrap">
-              <span className="block font-heading text-[1.05rem]">{master.brand}</span>
-              <span className="block text-[0.7rem] text-muted-foreground">{p.role}</span>
+          <TLink to="/" className="flex min-w-0 items-center gap-3">
+            <Monogram className="shrink-0" />
+            {/* Есть студия — она главная строка, имя под ней. Нет — имя и специализация */}
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate font-heading text-[1.05rem]">{p.brand || p.name}</span>
+              <span className="block truncate text-[0.7rem] text-muted-foreground">{p.brand ? p.name : p.role}</span>
             </span>
           </TLink>
           <nav className="ml-auto hidden items-center gap-1 lg:flex">
@@ -82,8 +83,11 @@ export function ClientLayout() {
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
-              <Monogram />
-              <span className="font-heading text-lg">{master.brand}</span>
+              <Monogram className="shrink-0" />
+              <span className="min-w-0 leading-tight">
+                <span className="block font-heading text-lg break-words">{p.brand || p.name}</span>
+                {p.brand && <span className="block text-xs text-muted-foreground">{p.name}</span>}
+              </span>
             </div>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">{p.tagline}</p>
             <Disclaimer className="mt-4 max-w-xs" />

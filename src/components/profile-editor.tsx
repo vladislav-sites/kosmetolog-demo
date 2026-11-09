@@ -26,6 +26,8 @@ const toForm = (p: Profile): Form => ({
 const clean = (v?: string) => (v ?? "").trim() || undefined
 
 const toProfile = (f: Form): Profile => ({
+  name: f.name.replace(/\s+/g, " ").trim(),
+  brand: clean(f.brand?.replace(/\s+/g, " ")),
   role: f.role.trim(),
   city: f.city.trim(),
   tagline: f.tagline.trim(),
@@ -49,7 +51,7 @@ const toProfile = (f: Form): Profile => ({
 /** Черновик живёт вне компонента: переключилась на «Записи» и обратно — правки на месте */
 let draft: Form | null = null
 
-type Status = "saved" | "pending" | "error" | "invalid"
+type Status = "saved" | "pending" | "error" | "invalid" | "noName"
 
 export function ProfileEditor() {
   const profile = useAppState((s) => s.profile)
@@ -70,8 +72,10 @@ export function ProfileEditor() {
     const cur = fRef.current
     const saved = getState().profile
     const emptyTagline = !cur.tagline.trim()
-    // Пустой заголовок не сохраняем — на сайте остаётся прежний, всё остальное сохраняется
-    const next = { ...toProfile(cur), tagline: emptyTagline ? saved.tagline : cur.tagline.trim() }
+    const emptyName = !cur.name.trim()
+    // Пустые заголовок и имя не сохраняем — на сайте остаются прежние, всё остальное сохраняется
+    const base = toProfile(cur)
+    const next = { ...base, tagline: emptyTagline ? saved.tagline : base.tagline, name: emptyName ? saved.name : base.name }
     ownSave.current = next
     if (JSON.stringify(next) !== JSON.stringify(saved) && !actions.saveProfile(next)) {
       setStatus("error")
@@ -82,8 +86,8 @@ export function ProfileEditor() {
       setF(back)
       return
     }
-    draft = emptyTagline ? cur : null
-    setStatus(emptyTagline ? "invalid" : "saved")
+    draft = emptyTagline || emptyName ? cur : null
+    setStatus(emptyName ? "noName" : emptyTagline ? "invalid" : "saved")
   }
 
   const update = (patch: Partial<Form>, now = false) => {
@@ -114,6 +118,7 @@ export function ProfileEditor() {
   }, [profile])
 
   const taglineEmpty = !f.tagline.trim()
+  const nameEmpty = !f.name.trim()
 
   const pickPhoto = async (file?: File) => {
     if (!file) return
@@ -144,6 +149,34 @@ export function ProfileEditor() {
       </div>
 
       <div className="mt-6 space-y-4">
+        {/* ——— Имя и студия ——— */}
+        <Card title="Имя и студия" hint="Видно в шапке сайта, на сертификате и на заставке при открытии приложения.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="pf-name" label="Имя и фамилия" error={nameEmpty ? "Без имени сайт будет безымянным" : undefined}>
+              <Input
+                id="pf-name"
+                value={f.name}
+                maxLength={40}
+                autoComplete="name"
+                onChange={(e) => update({ name: e.target.value })}
+                placeholder="Вера Лаврова"
+                className="h-11 rounded-xl"
+              />
+            </Field>
+            <Field id="pf-brand" label="Название студии" hint="необязательно">
+              <Input
+                id="pf-brand"
+                value={f.brand ?? ""}
+                maxLength={40}
+                onChange={(e) => update({ brand: e.target.value })}
+                placeholder="Например: Тихая кожа"
+                className="h-11 rounded-xl"
+              />
+            </Field>
+          </div>
+          <p className="text-xs text-muted-foreground">Нет названия — оставьте поле пустым: тогда на сайте везде будет ваше имя.</p>
+        </Card>
+
         {/* ——— Фото ——— */}
         <Card title="Фото">
           <div className="flex flex-wrap items-center gap-5">
@@ -333,6 +366,7 @@ function SaveStatus({ status }: { status: Status }) {
     pending: { text: "Сохраняю…", cls: "text-muted-foreground" },
     error: { text: "Не сохранилось — фото слишком большое", cls: "text-destructive" },
     invalid: { text: "Заголовок пустой — на сайте остался прежний. Остальное сохранено.", cls: "text-destructive" },
+    noName: { text: "Имя пустое — на сайте осталось прежнее. Остальное сохранено.", cls: "text-destructive" },
   }
   const s = map[status]
   return (

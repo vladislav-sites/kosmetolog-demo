@@ -31,6 +31,10 @@ export type WorkDay = { enabled: boolean; from: string; to: string }
 
 /** То, что мастер сама меняет в кабинете → «Моя страница» */
 export type Profile = {
+  /** Имя и фамилия мастера */
+  name: string
+  /** Название студии/кабинета. Пусто — нигде не показывается */
+  brand?: string
   role: string
   city: string
   tagline: string
@@ -50,7 +54,9 @@ export type Profile = {
 }
 
 export type MasterConfig = {
-  brand: string
+  /** Стартовое название студии (необязательно); дальше мастер меняет его в кабинете */
+  brand?: string
+  /** Стартовое имя и фамилия; дальше мастер меняет их в кабинете */
   masterName: string
   role: string
   city: string

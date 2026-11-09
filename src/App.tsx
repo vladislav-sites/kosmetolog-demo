@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect } from "react"
 import { Route, Routes, useLocation } from "react-router"
 import { Toaster } from "@/components/ui/sonner"
-import { useAppState } from "@/lib/store"
+import { brandOf, useAppState } from "@/lib/store"
 import { ClientLayout } from "@/components/client-layout"
+import { Splash } from "@/components/splash"
 import HomePage from "@/pages/home"
 import ProceduresPage from "@/pages/procedures"
 import ProcedurePage from "@/pages/procedure"
@@ -23,7 +24,13 @@ const THEME_COLOR = { milk: "#f6f1ea", olive: "#f1f0e8", noir: "#121110" } as co
 
 export default function App() {
   const theme = useAppState((s) => s.theme)
+  const profile = useAppState((s) => s.profile)
   const { pathname } = useLocation()
+
+  // Название вкладки и подпись в «Недавних» — по студии или имени, как в шапке
+  useEffect(() => {
+    document.title = [brandOf(profile), profile.role].filter(Boolean).join(" — ")
+  }, [profile])
 
   useEffect(() => {
     // data-skin, а не data-theme: data-theme занят светлой/тёмной темой страницы-хозяина
@@ -53,6 +60,8 @@ export default function App() {
         </Route>
       </Routes>
       <Toaster position="top-center" />
+      {/* Заставка с именем — для клиенток; в кабинете и во встроенном демо не нужна */}
+      {!pathname.startsWith("/admin") && <Splash />}
     </>
   )
 }

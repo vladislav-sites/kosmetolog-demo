@@ -1,6 +1,5 @@
 import { TLink } from "@/components/tlink"
 import { ArrowRight, GraduationCap } from "lucide-react"
-import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
 import { Portrait } from "@/components/bits"
 import { plural } from "@/lib/time"
@@ -22,7 +21,7 @@ export default function AboutPage() {
 
         <div className="min-w-0">
           <p className="eyebrow mb-4">Обо мне</p>
-          <h1 className="font-heading text-4xl leading-[1.05] sm:text-5xl">{master.masterName}</h1>
+          <h1 className="font-heading text-4xl leading-[1.05] sm:text-5xl">{p.name}</h1>
           {sub && <p className="mt-2 text-muted-foreground first-letter:uppercase">{sub}</p>}
           {p.about.length > 0 && (
             <div className="mt-8 space-y-4 text-[1.05rem] leading-relaxed">

@@ -1,16 +1,12 @@
 import { TLink } from "@/components/tlink"
 import { ArrowUpRight, Clock } from "lucide-react"
 import { cn } from "cn"
-import { master } from "@/config/master"
 import type { Service, ThemeId } from "@/config/types"
-import { actions, useAppState } from "@/lib/store"
+import { actions, initialsOf, useAppState } from "@/lib/store"
 import { dur, price } from "@/lib/time"
 
 export function Monogram({ className }: { className?: string }) {
-  const initials = master.masterName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
+  const initials = initialsOf(useAppState((s) => s.profile.name))
   return (
     <span
       aria-hidden
@@ -26,14 +22,12 @@ export function Monogram({ className }: { className?: string }) {
 
 /** Фото мастера в арке. Пока фото нет — инициалы на градиенте. */
 export function Portrait({ src, className }: { src?: string; className?: string }) {
-  const initials = master.masterName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
+  const name = useAppState((s) => s.profile.name)
+  const initials = initialsOf(name)
   return (
     <div className={cn("grain arch relative aspect-[4/5] w-full overflow-hidden", className)}>
       {src ? (
-        <img src={src} alt={master.masterName} className="absolute inset-0 size-full object-cover" />
+        <img src={src} alt={name} className="absolute inset-0 size-full object-cover" />
       ) : (
         <span className="absolute inset-0 grid place-items-center font-heading text-[7rem] leading-none text-white/70 mix-blend-soft-light sm:text-[9rem]">
           {initials}
@@ -106,6 +100,8 @@ export function ThemeSwitcher({ compact, className }: { compact?: boolean; class
           key={t.id}
           role="radio"
           aria-checked={theme === t.id}
+          aria-label={t.label}
+          title={t.label}
           onClick={() => actions.setTheme(t.id)}
           className={cn(
             "flex items-center gap-2 rounded-full border px-2 py-1.5 text-xs font-medium transition-colors sm:px-3",

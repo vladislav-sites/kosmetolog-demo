@@ -1,6 +1,8 @@
 /** Маска +7 (900) 123-45-67 */
 export function formatPhone(input: string) {
   let d = input.replace(/\D/g, "")
+  // Номер целиком дописали после «+7» (вставили +7 900… или набрали 8 900…) — лишняя 7 впереди
+  if (d.length > 11 && /^7[78]/.test(d)) d = d.slice(1)
   if (d.startsWith("8")) d = "7" + d.slice(1)
   if (!d.startsWith("7")) d = "7" + d
   d = d.slice(0, 11)

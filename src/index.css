@@ -443,6 +443,134 @@
   }
 }
 
+/* ——— Заставка при входе (components/splash.tsx) ——— */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.splash[data-leaving] {
+  pointer-events: none;
+  animation: splash-out 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.splash-inner {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 36rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.splash[data-leaving] .splash-inner {
+  animation: splash-inner-out 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.splash-mono {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1.75rem;
+  place-items: center;
+  border: 1px solid color-mix(in oklab, currentColor 18%, transparent);
+  border-radius: 999px;
+  font-size: 1.2rem;
+  opacity: 0;
+  animation: splash-mono 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s forwards;
+}
+.splash-name {
+  /* Длинное слово («Константинопольская») уменьшает шрифт, чтобы влезть в экран целиком */
+  font-size: min(clamp(2.3rem, 9vw, 4.2rem), calc((100vw - 3rem) / (var(--longest, 8) * 0.64)));
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.splash-ch {
+  display: inline-block;
+  opacity: 0;
+  animation: splash-ch 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0ms) forwards;
+}
+.splash-line {
+  display: block;
+  width: 3.5rem;
+  height: 1px;
+  margin-top: 1.4rem;
+  background: var(--clay);
+  transform: scaleX(0);
+  animation: splash-line 0.8s cubic-bezier(0.6, 0, 0.2, 1) var(--d, 0ms) forwards;
+}
+.splash-brand {
+  margin-top: 1.1rem;
+  padding-left: 0.28em; /* разрядка добавляет хвост справа — уравниваем, чтобы слово стояло по центру */
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  animation: splash-brand 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0ms) forwards;
+}
+@keyframes splash-ch {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+@keyframes splash-mono {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes splash-line {
+  to {
+    transform: scaleX(1);
+  }
+}
+/* Название «собирается»: буквы сходятся из широкой разрядки */
+@keyframes splash-brand {
+  from {
+    opacity: 0;
+    letter-spacing: 0.7em;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.28em;
+    filter: blur(0);
+  }
+}
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes splash-inner-out {
+  to {
+    opacity: 0;
+    transform: scale(1.06);
+    filter: blur(12px);
+  }
+}
+
 /* Если браузер не умеет размывать фон — делаем стекло почти непрозрачным, чтобы текст читался */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass,
