@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useLayoutEffect } from "react"
 import { Route, Routes, useLocation } from "react-router"
 import { Toaster } from "@/components/ui/sonner"
 import { useAppState } from "@/lib/store"
@@ -31,7 +31,8 @@ export default function App() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme])
   }, [theme])
 
-  useEffect(() => {
+  // Наверх — синхронно, внутри анимации перехода, чтобы новый экран не «прыгал»
+  useLayoutEffect(() => {
     window.scrollTo({ top: 0 })
   }, [pathname])
 

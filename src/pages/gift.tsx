@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link } from "react-router"
+import { TLink } from "@/components/tlink"
 import { Check, Gift } from "lucide-react"
 import { cn } from "cn"
 import { master } from "@/config/master"
@@ -73,7 +73,9 @@ export default function GiftPage() {
             <p className="mt-4 font-heading text-2xl">Заявка отправлена</p>
             <p className="mt-2 text-sm text-muted-foreground">Свяжусь с вами в ближайшее время, чтобы договориться об оплате и прислать сертификат.</p>
             <Button asChild variant="outline" className="mt-6 rounded-full bg-transparent">
-              <Link to="/">На главную</Link>
+              <TLink to="/" dir="pop">
+                На главную
+              </TLink>
             </Button>
           </div>
         ) : (

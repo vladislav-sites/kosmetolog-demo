@@ -31,6 +31,7 @@ import { Switch } from "@/components/ui/switch"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Monogram } from "@/components/bits"
 import { DURATIONS, ServiceEditor } from "@/components/service-editor"
+import { tap, withTransition } from "@/lib/transition"
 import { ProfileEditor } from "@/components/profile-editor"
 import type { Category, Service } from "@/config/types"
 import { actions, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
@@ -96,12 +97,11 @@ function PinGate({ onOk }: { onOk: () => void }) {
 }
 
 const TABS = [
-  { id: "day", label: "Записи", icon: CalendarDays },
-  { id: "repeat", label: "Позвать снова", icon: BellRing },
-  { id: "services", label: "Процедуры", icon: Sparkles },
-  { id: "page", label: "Моя страница", icon: Palette },
-  { id: "hours", label: "График", icon: Clock },
-  { id: "gifts", label: "Сертификаты", icon: Gift },
+  { id: "day", label: "Записи", short: "Записи", icon: CalendarDays },
+  { id: "services", label: "Процедуры", short: "Процедуры", icon: Sparkles },
+  { id: "page", label: "Моя страница", short: "Страница", icon: Palette },
+  { id: "hours", label: "График", short: "График", icon: Clock },
+  { id: "gifts", label: "Сертификаты", short: "Подарки", icon: Gift },
 ] as const
 type TabId = (typeof TABS)[number]["id"]
 
@@ -110,11 +110,20 @@ function Cabinet() {
   const s = useAppState((st) => st)
   const newCount = s.bookings.filter((b) => b.status === "new" && parseLocal(b.start) >= startOfDay(new Date())).length
   const giftCount = s.gifts.filter((g) => g.status === "new").length
-  const repeatCount = useRepeatList().length
+  const countOf = (id: TabId) => (id === "day" ? newCount : id === "gifts" ? giftCount : 0)
+
+  /** Смена вкладки — «перелистывание» влево/вправо, как между экранами приложения */
+  const go = (id: TabId) => {
+    if (id === tab) return
+    const from = TABS.findIndex((t) => t.id === tab)
+    const to = TABS.findIndex((t) => t.id === id)
+    tap()
+    withTransition(() => setTab(id), to > from ? "forward" : "back")
+  }
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="glass-bar sticky top-0 z-30">
+      <header className="glass-bar sticky top-0 z-30 [view-transition-name:site-header]">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4 sm:px-6">
           <Link to="/" className="grid size-9 place-items-center rounded-full border border-border hover:bg-muted" aria-label="На сайт">
             <ArrowLeft className="size-4" />
@@ -138,15 +147,16 @@ function Cabinet() {
             </Button>
           )}
         </div>
-        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:px-6">
+        {/* на компьютере вкладки сверху */}
+        <nav className="mx-auto hidden max-w-5xl gap-1 px-6 pb-2 lg:flex">
           {TABS.map((t) => {
-            const count = t.id === "day" ? newCount : t.id === "gifts" ? giftCount : t.id === "repeat" ? repeatCount : 0
+            const count = countOf(t.id)
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => go(t.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition-colors",
+                  "press flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition-colors",
                   tab === t.id ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -163,14 +173,45 @@ function Cabinet() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 md:py-10">
+      <main className="mx-auto max-w-5xl px-4 pt-6 pb-32 [view-transition-name:page] sm:px-6 md:pt-10 lg:pb-10">
         {tab === "day" && <DayTab />}
-        {tab === "repeat" && <RepeatTab />}
         {tab === "services" && <ServicesTab />}
         {tab === "hours" && <HoursTab />}
         {tab === "gifts" && <GiftsTab />}
         {tab === "page" && <ProfileEditor />}
       </main>
+
+      {/* на телефоне вкладки снизу — под большим пальцем, как на сайте */}
+      <nav
+        aria-label="Разделы кабинета"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] [view-transition-name:tabbar] lg:hidden"
+      >
+        <div className="glass pointer-events-auto mx-auto grid max-w-md grid-cols-5 rounded-[1.75rem] p-1.5">
+          {TABS.map((t) => {
+            const count = countOf(t.id)
+            const active = tab === t.id
+            return (
+              <button
+                key={t.id}
+                onClick={() => go(t.id)}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "press relative flex min-w-0 flex-col items-center gap-0.5 rounded-[1.3rem] py-2 text-[0.64rem] text-muted-foreground transition-colors",
+                  active && "bg-foreground/10 font-semibold text-foreground",
+                )}
+              >
+                <t.icon className="size-5" strokeWidth={1.7} />
+                <span className="max-w-full truncate text-[0.6rem] tracking-[-0.01em] min-[360px]:text-[0.64rem]">{t.short}</span>
+                {count > 0 && (
+                  <span className="absolute top-1 right-[calc(50%-1.15rem)] min-w-4 rounded-full bg-clay px-1 text-center text-[0.6rem] leading-4 font-semibold text-white tabular-nums">
+                    {count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </nav>
     </div>
   )
 }
@@ -338,71 +379,6 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint: strin
       <p className="mt-1 text-[1.05rem] leading-tight font-semibold whitespace-nowrap tabular-nums sm:text-xl">{value}</p>
       <p className="text-[0.7rem] text-muted-foreground">{hint}</p>
     </div>
-  )
-}
-
-/* ———————————————— Позвать снова ———————————————— */
-
-function useRepeatList() {
-  const s = useAppState((st) => st)
-  return useMemo(() => {
-    const now = new Date()
-    const byPhone = new Map<string, Booking[]>()
-    for (const b of s.bookings) {
-      const k = b.phone.replace(/\D/g, "")
-      byPhone.set(k, [...(byPhone.get(k) ?? []), b])
-    }
-    const out: { last: Booking; due: Date; overdue: number }[] = []
-    for (const list of byPhone.values()) {
-      const hasFuture = list.some((b) => b.status !== "cancelled" && parseLocal(b.start) > now)
-      if (hasFuture) continue
-      const last = list.filter((b) => b.status === "done").sort((a, b) => b.start.localeCompare(a.start))[0]
-      if (!last) continue
-      const svc = s.services.find((x) => x.id === last.serviceId)
-      if (!svc?.repeatAfterDays) continue
-      const due = addDays(parseLocal(last.start), svc.repeatAfterDays)
-      const overdue = differenceInCalendarDays(now, due)
-      if (overdue >= -3) out.push({ last, due, overdue })
-    }
-    return out.sort((a, b) => b.overdue - a.overdue)
-  }, [s])
-}
-
-function RepeatTab() {
-  const list = useRepeatList()
-  return (
-    <section>
-      <h2 className="font-heading text-2xl">Позвать снова</h2>
-      <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-        Клиентки, которым пора на следующую процедуру по курсу или на повтор, — и у которых ещё нет записи. Одно касание — и готовое сообщение открыто в
-        WhatsApp.
-      </p>
-      <div className="mt-6 space-y-2.5">
-        {list.length === 0 && <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Пока никого — все записаны</p>}
-        {list.map(({ last, due, overdue }) => {
-          const digits = last.phone.replace(/\D/g, "")
-          const text = `${last.name}, добрый день! Это ${master.masterName.split(" ")[0]}, косметолог. Подошло время для следующей процедуры «${last.serviceTitle}». Подобрать вам удобное время?`
-          return (
-            <div key={last.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-4">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">{last.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {last.serviceTitle} · была {format(parseLocal(last.start), "d MMMM", { locale: ru })}
-                </p>
-                <p className={cn("mt-1 text-xs font-medium", overdue > 0 ? "text-clay" : "text-muted-foreground")}>
-                  {overdue > 0 ? `пора ${overdue} дн. назад` : overdue === 0 ? "пора сегодня" : `пора ${format(due, "d MMMM", { locale: ru })}`}
-                </p>
-              </div>
-              <Button asChild size="sm" className="rounded-full">
-                <a href={`https://wa.me/${digits}?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer">
-                  <MessageCircle /> Напомнить
-                </a>
-              </Button>
-            </div>
-          )
-        })}
-      </div>
-    </section>
   )
 }
 

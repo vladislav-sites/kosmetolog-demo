@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Link } from "react-router"
+import { TLink } from "@/components/tlink"
 import { addDays, isToday, isTomorrow } from "date-fns"
 import { ArrowRight, Gift, MapPin } from "lucide-react"
 import { master } from "@/config/master"
@@ -43,12 +43,12 @@ export default function HomePage() {
           {p.intro && <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed whitespace-pre-line text-muted-foreground">{p.intro}</p>}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 rounded-full px-7 text-[0.95rem]">
-              <Link to={consult ? `/book?service=${consult.id}` : "/book"}>
+              <TLink to={consult ? `/book?service=${consult.id}` : "/book"} morph>
                 Записаться на консультацию <ArrowRight />
-              </Link>
+              </TLink>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 rounded-full bg-transparent px-7 text-[0.95rem]">
-              <Link to="/procedures">Процедуры и цены</Link>
+              <TLink to="/procedures">Процедуры и цены</TLink>
             </Button>
           </div>
           <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-border pt-6">
@@ -64,9 +64,10 @@ export default function HomePage() {
         <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm lg:max-w-none">
           <Portrait src={p.portrait} />
           {nextLabel && (
-            <Link
+            <TLink
               to={consult ? `/book?service=${consult.id}` : "/book"}
-              className="glass absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
+              morph
+              className="glass press absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
             >
               <span className="relative flex size-2.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/60" />
@@ -77,7 +78,7 @@ export default function HomePage() {
                 <span className="font-medium">{nextLabel}</span>
               </span>
               <ArrowRight className="ml-auto size-4 text-muted-foreground" />
-            </Link>
+            </TLink>
           )}
         </div>
       </section>
@@ -86,9 +87,9 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl border-t border-border px-4 py-14 sm:px-6 md:py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle eyebrow="Процедуры и цены" title="Что я делаю" className="mb-6" />
-          <Link to="/procedures" className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
+          <TLink to="/procedures" className="press mb-6 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
             Все процедуры <ArrowRight className="size-4" />
-          </Link>
+          </TLink>
         </div>
         <div>
           {services.slice(0, 5).map((svc, i) => (
@@ -105,9 +106,9 @@ export default function HomePage() {
               <p className="text-[0.7rem] font-semibold tracking-[0.18em] uppercase opacity-70">Не знаете, с чего начать?</p>
               <h2 className="mt-3 font-heading text-3xl leading-tight sm:text-4xl">Начните с консультации — подберём уход и процедуры под вашу кожу</h2>
               <Button asChild variant="secondary" size="lg" className="mt-7 h-12 rounded-full px-7">
-                <Link to={`/book?service=${consult.id}`}>
+                <TLink to={`/book?service=${consult.id}`} morph>
                   Записаться · {price(consult.price)} <ArrowRight />
-                </Link>
+                </TLink>
               </Button>
             </div>
             <div className="arch absolute -right-16 -bottom-24 h-80 w-64 opacity-40 sm:right-10 sm:h-96 sm:w-72" />
@@ -127,9 +128,9 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <Link to="/about" className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
+          <TLink to="/about" className="press mt-8 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-clay">
             Обо мне и образование <ArrowRight className="size-4" />
-          </Link>
+          </TLink>
         </section>
       ) : (
         <div className="h-14 md:h-20" />
@@ -137,7 +138,7 @@ export default function HomePage() {
 
       {/* ——— Сертификат + адрес ——— */}
       <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-16 sm:px-6 md:grid-cols-2">
-        <Link to="/gift" className="group flex flex-col justify-between gap-8 rounded-3xl border border-border bg-tint/60 p-7 transition-colors hover:bg-tint">
+        <TLink to="/gift" className="press-soft group flex flex-col justify-between gap-8 rounded-3xl border border-border bg-tint/60 p-7 hover:bg-tint">
           <Gift className="size-7 text-clay" strokeWidth={1.5} />
           <div>
             <p className="font-heading text-2xl">Подарочный сертификат</p>
@@ -146,7 +147,7 @@ export default function HomePage() {
               Оформить <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </span>
           </div>
-        </Link>
+        </TLink>
         <div className="flex flex-col justify-between gap-8 rounded-3xl border border-border bg-card p-7">
           <MapPin className="size-7 text-clay" strokeWidth={1.5} />
           <div>

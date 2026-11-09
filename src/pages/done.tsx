@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router"
+import { useParams } from "react-router"
+import { TLink } from "@/components/tlink"
 import { CalendarPlus, Check, MapPin, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAppState } from "@/lib/store"
@@ -17,7 +18,9 @@ export default function DonePage() {
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
         <p className="font-heading text-3xl">Запись не найдена</p>
         <Button asChild className="mt-6 rounded-full">
-          <Link to="/book">Записаться</Link>
+          <TLink to="/book" dir="push">
+            Записаться
+          </TLink>
         </Button>
       </div>
     )
@@ -88,7 +91,9 @@ export default function DonePage() {
         )}
       </div>
       <Button asChild variant="link" className="mt-6 px-0">
-        <Link to="/">На главную</Link>
+        <TLink to="/" dir="pop">
+          На главную
+        </TLink>
       </Button>
     </div>
   )

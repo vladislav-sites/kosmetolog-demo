@@ -1,4 +1,4 @@
-import { Link } from "react-router"
+import { TLink } from "@/components/tlink"
 import { ArrowUpRight, Clock } from "lucide-react"
 import { cn } from "cn"
 import { master } from "@/config/master"
@@ -67,9 +67,10 @@ export function PhotoTile({ service, className }: { service: Service; className?
 
 export function ServiceRow({ service, index }: { service: Service; index?: number }) {
   return (
-    <Link
+    <TLink
       to={`/procedures/${service.id}`}
-      className="group grid grid-cols-[auto_1fr_auto] items-start gap-4 border-b border-border py-5 transition-colors first:border-t hover:bg-card/60 sm:gap-6 sm:px-2"
+      dir="push"
+      className="press-soft group grid grid-cols-[auto_1fr_auto] items-start gap-4 border-b border-border py-5 first:border-t hover:bg-card/60 active:bg-card/80 sm:gap-6 sm:px-2"
     >
       <span className="w-7 pt-1.5 text-xs font-medium text-muted-foreground tabular-nums">
         {index !== undefined ? String(index + 1).padStart(2, "0") : ""}
@@ -86,7 +87,7 @@ export function ServiceRow({ service, index }: { service: Service; index?: numbe
         <span className="whitespace-nowrap text-[0.95rem] font-semibold tabular-nums">{price(service.price, service.priceFrom)}</span>
         <ArrowUpRight className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
       </span>
-    </Link>
+    </TLink>
   )
 }
 

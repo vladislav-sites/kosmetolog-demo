@@ -1,4 +1,4 @@
-import { Link } from "react-router"
+import { TLink } from "@/components/tlink"
 import { ArrowRight, GraduationCap } from "lucide-react"
 import { master } from "@/config/master"
 import { Button } from "@/components/ui/button"
@@ -65,9 +65,9 @@ export default function AboutPage() {
           )}
 
           <Button asChild size="lg" className="mt-12 h-12 rounded-full px-7">
-            <Link to={consult ? `/book?service=${consult.id}` : "/book"}>
+            <TLink to={consult ? `/book?service=${consult.id}` : "/book"} morph>
               {consult ? "Записаться на консультацию" : "Записаться"} <ArrowRight />
-            </Link>
+            </TLink>
           </Button>
         </div>
       </div>

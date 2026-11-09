@@ -42,7 +42,6 @@ type Form = {
   contraindications: string
   courseSessions: string
   courseInterval: string
-  repeatAfterDays: string
   active: boolean
   featured: boolean
   photo?: string
@@ -64,7 +63,6 @@ function toForm(s: Service | undefined, fallbackCat: string): Form {
     contraindications: unlines(s?.contraindications),
     courseSessions: s?.course ? String(s.course.sessions) : "",
     courseInterval: s?.course ? String(s.course.intervalDays) : "",
-    repeatAfterDays: s?.repeatAfterDays ? String(s.repeatAfterDays) : "",
     active: s?.active ?? true,
     featured: s?.featured ?? false,
     photo: s?.photo,
@@ -135,7 +133,6 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
       prep: prep.length ? prep : undefined,
       contraindications: contra.length ? contra : undefined,
       course: sessions && interval ? { sessions, intervalDays: interval } : undefined,
-      repeatAfterDays: num(f.repeatAfterDays) || undefined,
       photo: f.photo,
       active: f.active,
       featured: f.featured || undefined,
@@ -281,7 +278,7 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
         </Field>
 
         <fieldset className="space-y-3 rounded-2xl border border-border p-4">
-          <legend className="px-1 text-sm font-medium">Курс и повтор</legend>
+          <legend className="px-1 text-sm font-medium">Курс</legend>
           <div className="grid grid-cols-2 gap-3">
             <Field id="svc-sessions" label="Процедур в курсе">
               <Input id="svc-sessions" inputMode="numeric" value={f.courseSessions} onChange={(e) => set("courseSessions", e.target.value.replace(/\D/g, ""))} placeholder="—" className="h-11 rounded-xl tabular-nums" />
@@ -290,9 +287,6 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
               <Input id="svc-interval" inputMode="numeric" value={f.courseInterval} onChange={(e) => set("courseInterval", e.target.value.replace(/\D/g, ""))} placeholder="—" className="h-11 rounded-xl tabular-nums" />
             </Field>
           </div>
-          <Field id="svc-repeat" label="Позвать снова через … дней" hint="появится во вкладке «Позвать снова»">
-            <Input id="svc-repeat" inputMode="numeric" value={f.repeatAfterDays} onChange={(e) => set("repeatAfterDays", e.target.value.replace(/\D/g, ""))} placeholder="—" className="h-11 rounded-xl tabular-nums" />
-          </Field>
         </fieldset>
 
         <div className="space-y-4 rounded-2xl border border-border p-4">

@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router"
+import { useParams } from "react-router"
+import { TLink } from "@/components/tlink"
 import { ArrowLeft, ArrowRight, CalendarClock, Clock, Repeat } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -18,7 +19,9 @@ export default function ProcedurePage() {
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
         <p className="font-heading text-3xl">Процедура не найдена</p>
         <Button asChild variant="outline" className="mt-6 rounded-full">
-          <Link to="/procedures">К списку процедур</Link>
+          <TLink to="/procedures" dir="pop">
+            К списку процедур
+          </TLink>
         </Button>
       </div>
     )
@@ -28,9 +31,9 @@ export default function ProcedurePage() {
 
   return (
     <article className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
-      <Link to="/procedures" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <TLink to="/procedures" dir="pop" className="press -ml-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Все процедуры
-      </Link>
+      </TLink>
 
       <div className="mt-6 grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-14">
         <div className="min-w-0 md:sticky md:top-24 md:self-start">
@@ -106,13 +109,15 @@ export default function ProcedurePage() {
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button asChild size="lg" className="h-12 rounded-full px-7">
-              <Link to={`/book?service=${s.id}`}>
+              <TLink to={`/book?service=${s.id}`} morph>
                 Записаться на процедуру <ArrowRight />
-              </Link>
+              </TLink>
             </Button>
             {needsConsult && (
               <Button asChild variant="outline" size="lg" className="h-12 rounded-full bg-transparent px-7">
-                <Link to={`/book?service=${consult!.id}`}>Сначала консультация</Link>
+                <TLink to={`/book?service=${consult!.id}`} morph>
+                  Сначала консультация
+                </TLink>
               </Button>
             )}
           </div>

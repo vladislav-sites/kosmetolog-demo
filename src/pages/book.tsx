@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react"
-import { Link, useNavigate, useSearchParams } from "react-router"
+import { useLayoutEffect, useMemo, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router"
 import { addDays, startOfDay } from "date-fns"
 import { ru } from "react-day-picker/locale"
 import { ArrowLeft, Check, Clock } from "lucide-react"
@@ -14,6 +14,7 @@ import { Consent } from "@/components/consent"
 import { actions, useAppState } from "@/lib/store"
 import { dayKey, dur, fmtDay, getSlots, price } from "@/lib/time"
 import { formatPhone, phoneValid } from "@/lib/phone"
+import { tap, withTransition } from "@/lib/transition"
 
 type Step = 0 | 1 | 2
 
@@ -53,7 +54,7 @@ export default function BookPage() {
 
   const slots = date && service ? getSlots(date, service.duration, state) : []
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo({ top: 0 })
   }, [step])
 
@@ -73,14 +74,21 @@ export default function BookPage() {
       phone,
       comment: comment.trim() || undefined,
     })
-    navigate(`/done/${b.id}`, { replace: true })
+    tap(14)
+    withTransition(() => navigate(`/done/${b.id}`, { replace: true }), "push")
   }
 
-  const back = () => (step === 0 ? navigate(-1) : setStep((step - 1) as Step))
+  /** Шаги записи листаются: вперёд — новый экран въезжает справа, назад — возвращается слева */
+  const goStep = (to: Step) => {
+    if (to === step) return
+    tap()
+    withTransition(() => setStep(to), to > step ? "push" : "pop")
+  }
+  const back = () => (step === 0 ? navigate(-1) : goStep((step - 1) as Step))
   const STEPS = ["Процедура", "Дата и время", "Контакты"]
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pt-6 pb-36 sm:px-6 md:pt-12 lg:pb-20">
+    <div className="mx-auto max-w-2xl bg-background px-4 pt-6 pb-36 [view-transition-name:book-sheet] sm:px-6 md:pt-12 lg:pb-20">
       <div className="flex items-center gap-3">
         <button onClick={back} className="grid size-10 place-items-center rounded-full border border-border hover:bg-muted" aria-label="Назад">
           <ArrowLeft className="size-4" />
@@ -105,13 +113,16 @@ export default function BookPage() {
               <button
                 key={s.id}
                 onClick={() => {
-                  setServiceId(s.id)
-                  setDate(undefined)
-                  setTime(undefined)
-                  setStep(1)
+                  tap()
+                  withTransition(() => {
+                    setServiceId(s.id)
+                    setDate(undefined)
+                    setTime(undefined)
+                    setStep(1)
+                  }, "push")
                 }}
                 className={cn(
-                  "flex w-full items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-colors hover:border-foreground/40",
+                  "press-soft flex w-full items-center gap-4 rounded-2xl border bg-card p-4 text-left hover:border-foreground/40",
                   serviceId === s.id ? "border-foreground" : "border-border",
                 )}
               >
@@ -134,7 +145,7 @@ export default function BookPage() {
       {/* ——— Шаг 2: дата и время ——— */}
       {step === 1 && service && (
         <section className="mt-8 animate-in fade-in">
-          <SelectedService title={service.title} meta={`${dur(service.duration)} · ${price(service.price, service.priceFrom)}`} onChange={() => setStep(0)} />
+          <SelectedService title={service.title} meta={`${dur(service.duration)} · ${price(service.price, service.priceFrom)}`} onChange={() => goStep(0)} />
           <h1 className="mt-8 font-heading text-3xl sm:text-4xl">Когда вам удобно?</h1>
           <div className="mt-5 rounded-2xl border border-border bg-card p-3 sm:p-5">
             <Calendar
@@ -163,7 +174,7 @@ export default function BookPage() {
                       key={t}
                       onClick={() => setTime(t)}
                       className={cn(
-                        "h-11 rounded-xl border text-sm tabular-nums transition-colors",
+                        "press h-11 rounded-xl border text-sm tabular-nums",
                         time === t ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40",
                       )}
                     >
@@ -179,7 +190,7 @@ export default function BookPage() {
           {!date && <p className="mt-4 text-sm text-muted-foreground">Выберите день — покажу свободное время.</p>}
 
           <BottomBar>
-            <Button size="lg" className="h-12 w-full rounded-full" disabled={!date || !time} onClick={() => setStep(2)}>
+            <Button size="lg" className="h-12 w-full rounded-full" disabled={!date || !time} onClick={() => goStep(2)}>
               {date && time ? `Дальше · ${time}` : "Выберите время"}
             </Button>
           </BottomBar>
@@ -192,7 +203,7 @@ export default function BookPage() {
           <SelectedService
             title={service.title}
             meta={`${fmtDay(date)}, ${time} · ${dur(service.duration)}`}
-            onChange={() => setStep(1)}
+            onChange={() => goStep(1)}
             changeLabel="Изменить время"
           />
           <h1 className="mt-8 font-heading text-3xl sm:text-4xl">Как с вами связаться?</h1>

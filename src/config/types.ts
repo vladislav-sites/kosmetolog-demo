@@ -17,8 +17,6 @@ export type Service = {
   effect?: string
   /** Рекомендованный курс */
   course?: { sessions: number; intervalDays: number }
-  /** Через сколько дней звать повторно (для напоминаний в кабинете) */
-  repeatAfterDays?: number
   prep?: string[]
   contraindications?: string[]
   photo?: string

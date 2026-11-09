@@ -298,6 +298,171 @@
   }
 }
 
+/* ——— Отклик на нажатие: кнопка «пружинит» под пальцем ——— */
+@layer components {
+  .press {
+    transition:
+      transform 0.22s cubic-bezier(0.3, 1.5, 0.5, 1),
+      background-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s,
+      filter 0.2s;
+  }
+  .press:active {
+    transform: scale(0.95);
+    filter: brightness(0.96);
+    transition-duration: 0.08s;
+  }
+  /* крупные строки-карточки сжимаются чуть-чуть */
+  .press-soft {
+    transition:
+      transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1),
+      background-color 0.2s;
+  }
+  .press-soft:active {
+    transform: scale(0.985);
+    transition-duration: 0.08s;
+  }
+}
+
+/*
+ * ——— Переходы между экранами (View Transitions) ———
+ * Шапка и нижнее меню стоят на месте, листается только содержимое (page).
+ * Кнопка «Запись» раскрывается в экран записи (book-sheet).
+ */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*) {
+    animation-duration: 0.42s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  ::view-transition-group(site-header),
+  ::view-transition-group(tabbar) {
+    z-index: 50;
+    animation: none;
+  }
+  ::view-transition-old(site-header),
+  ::view-transition-old(tabbar) {
+    display: none;
+  }
+  ::view-transition-new(site-header),
+  ::view-transition-new(tabbar) {
+    animation: none;
+  }
+
+  /* перелистывание вкладок */
+  html[data-nav="forward"]::view-transition-old(page) {
+    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-out-left;
+  }
+  html[data-nav="forward"]::view-transition-new(page) {
+    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-in-right;
+  }
+  html[data-nav="back"]::view-transition-old(page) {
+    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-out-right;
+  }
+  html[data-nav="back"]::view-transition-new(page) {
+    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-in-left;
+  }
+
+  /* открыть вложенный экран поверх / вернуться */
+  html[data-nav="push"]::view-transition-old(page),
+  html[data-nav="push"]::view-transition-old(book-sheet) {
+    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-recede-left;
+  }
+  html[data-nav="push"]::view-transition-new(page),
+  html[data-nav="push"]::view-transition-new(book-sheet) {
+    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-in-right;
+  }
+  html[data-nav="pop"]::view-transition-old(page),
+  html[data-nav="pop"]::view-transition-old(book-sheet) {
+    animation: 0.38s cubic-bezier(0.22, 1, 0.36, 1) both vt-out-right;
+  }
+  html[data-nav="pop"]::view-transition-new(page),
+  html[data-nav="pop"]::view-transition-new(book-sheet) {
+    animation: 0.38s cubic-bezier(0.22, 1, 0.36, 1) both vt-emerge-left;
+  }
+
+  /* «Запись»: кнопка раскрывается в экран записи */
+  html[data-nav="morph"]::view-transition-group(book-sheet) {
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.2, 1.05, 0.3, 1);
+    z-index: 40;
+  }
+  html[data-nav="morph"]::view-transition-old(book-sheet) {
+    animation: 0.18s ease-out both vt-fade-out;
+  }
+  html[data-nav="morph"]::view-transition-new(book-sheet) {
+    animation: 0.32s 0.08s ease-out both vt-fade-in;
+  }
+  html[data-nav="morph"]::view-transition-old(page) {
+    animation: 0.3s ease-out both vt-fade-scale-out;
+  }
+  html[data-nav="morph"]::view-transition-new(page) {
+    animation: 0.3s ease-out both vt-fade-in;
+  }
+  html[data-nav="morph"]::view-transition-old(tabbar) {
+    display: block;
+    animation: 0.3s cubic-bezier(0.4, 0, 1, 1) both vt-drop;
+  }
+}
+
+@keyframes vt-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes vt-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes vt-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes vt-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes vt-recede-left {
+  to {
+    transform: translateX(-28%);
+    opacity: 0.6;
+  }
+}
+@keyframes vt-emerge-left {
+  from {
+    transform: translateX(-28%);
+    opacity: 0.6;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-scale-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes vt-drop {
+  to {
+    transform: translateY(120%);
+  }
+}
+
 /* Если браузер не умеет размывать фон — делаем стекло почти непрозрачным, чтобы текст читался */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass,
