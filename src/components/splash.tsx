@@ -39,6 +39,13 @@ export function Splash() {
   const nameDone = 250 + chars.length * step + 650
   const hold = nameDone + (brand ? 900 : 450)
 
+  // Страховка: если анимация исчезновения не доиграла (вкладка в фоне, браузер не рисует кадры) — убрать заставку всё равно
+  useEffect(() => {
+    if (!leaving) return
+    const t = window.setTimeout(() => setShow(false), 900)
+    return () => window.clearTimeout(t)
+  }, [leaving])
+
   useEffect(() => {
     if (!show) return
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
