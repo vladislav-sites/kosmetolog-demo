@@ -50,7 +50,7 @@ export type AppState = {
 }
 
 const KEY = "cosmo-app-state"
-const VERSION = 3
+const VERSION = 4
 
 export const GIFT_MIN = 100
 export const GIFT_MAX = 1_000_000
@@ -114,6 +114,8 @@ function migrate(p: AppState): AppState | null {
   if (s.version === 1) s = { ...s, version: 2, categories: master.categories.map((c) => ({ ...c })) }
   // v2 → v3: номиналы сертификатов стали редактируемыми
   if (s.version === 2) s = { ...s, version: 3, giftAmounts: defaultGiftAmounts() }
+  // v3 → v4: появилась тема «Аметист» — один раз показываем её всем, дальше выбор снова запоминается
+  if (s.version === 3) s = { ...s, version: 4, theme: master.theme }
   return s.version === VERSION ? s : null
 }
 
