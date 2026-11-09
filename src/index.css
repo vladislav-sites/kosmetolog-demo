@@ -9,7 +9,7 @@
 @import "@fontsource/tenor-sans/cyrillic-400.css";
 @import "@fontsource/tenor-sans/latin-400.css";
 
-@custom-variant dark (&:is([data-skin="noir"] *));
+@custom-variant dark (&:is([data-skin="noir"] *, [data-skin="violet"] *));
 
 @theme inline {
   --font-heading: var(--heading);
@@ -73,6 +73,20 @@
   --arch-a: #e9d3c0;
   --arch-b: #c99b80;
   --radius: 0.9rem;
+  --heading-weight: 400;
+  /* стекло */
+  --glass-bg: rgb(251 248 244 / 0.55);
+  --glass-border: rgb(255 255 255 / 0.65);
+  --glass-hi: 0.5;
+  --glass-edge: 0.95;
+  --glass-rim: 0.9;
+  --glass-shadow: rgb(70 45 30 / 0.2);
+  --glass-blur: 22px;
+  --glass-sat: 180%;
+  /* фон за стеклом */
+  --aurora-1: rgb(233 196 170 / 0.45);
+  --aurora-2: rgb(214 170 150 / 0.3);
+  --aurora-3: rgb(240 220 200 / 0.4);
   color-scheme: light;
 }
 
@@ -105,6 +119,11 @@
   --arch-a: #d8dcc6;
   --arch-b: #8f9a73;
   --radius: 1.25rem;
+  --glass-bg: rgb(248 247 241 / 0.55);
+  --glass-shadow: rgb(40 50 30 / 0.2);
+  --aurora-1: rgb(200 210 170 / 0.45);
+  --aurora-2: rgb(180 160 110 / 0.25);
+  --aurora-3: rgb(225 228 205 / 0.4);
   color-scheme: light;
 }
 
@@ -138,6 +157,60 @@
   --arch-a: #3a302a;
   --arch-b: #8a6c52;
   --radius: 0.35rem;
+  --glass-bg: rgb(32 28 25 / 0.55);
+  --glass-border: rgb(255 255 255 / 0.1);
+  --glass-hi: 0.1;
+  --glass-edge: 0.2;
+  --glass-rim: 0.5;
+  --glass-shadow: rgb(0 0 0 / 0.55);
+  --aurora-1: rgb(201 162 122 / 0.12);
+  --aurora-2: rgb(140 100 70 / 0.12);
+  --aurora-3: rgb(226 205 176 / 0.06);
+  color-scheme: dark;
+}
+
+/* ——— «Аметист»: тёмно-фиолетовый, контрастный, под жидкое стекло ——— */
+[data-skin="violet"] {
+  --heading: "Manrope Variable", system-ui, sans-serif;
+  --heading-style: normal;
+  --heading-case: none;
+  --heading-track: -0.03em;
+  --heading-weight: 650;
+  --background: #0c0916;
+  --foreground: #f5f1ff;
+  --card: #161029;
+  --card-foreground: #f5f1ff;
+  --popover: #1a1330;
+  --popover-foreground: #f5f1ff;
+  --primary: #bda6ff;
+  --primary-foreground: #12092a;
+  --secondary: #231a3d;
+  --secondary-foreground: #f5f1ff;
+  --muted: #1e1734;
+  --muted-foreground: #ada3cc;
+  --accent: #2a2048;
+  --accent-foreground: #f5f1ff;
+  --destructive: #ff7d96;
+  --border: #2d2449;
+  --input: #3b305f;
+  --ring: #d68bff;
+  --clay: #e28bff;
+  --tint: #261c47;
+  --arch-a: #3a1d78;
+  --arch-b: #c13ae0;
+  --radius: 1.1rem;
+  --glass-bg: rgb(30 21 58 / 0.42);
+  --glass-border: rgb(255 255 255 / 0.14);
+  --glass-hi: 0.16;
+  --glass-edge: 0.32;
+  --glass-rim: 0.75;
+  --glass-shadow: rgb(6 0 24 / 0.65);
+  --glass-sat: 210%;
+  --aurora-1: rgb(124 77 255 / 0.38);
+  --aurora-2: rgb(214 64 238 / 0.24);
+  --aurora-3: rgb(64 110 255 / 0.18);
+  --gift-bg: linear-gradient(135deg, #2b1361 0%, #6a2bd9 55%, #c12fd8 100%);
+  --gift-fg: #ffffff;
   color-scheme: dark;
 }
 
@@ -153,6 +226,18 @@
     @apply bg-background text-foreground antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+  /* Мягкое цветное «сияние» за страницей: стеклу нужно, что преломлять */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(60vmax 45vmax at 8% 4%, var(--aurora-1), transparent 70%),
+      radial-gradient(50vmax 40vmax at 100% 38%, var(--aurora-2), transparent 70%),
+      radial-gradient(60vmax 40vmax at 40% 105%, var(--aurora-3), transparent 70%);
+  }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -161,7 +246,7 @@
     font-style: var(--heading-style);
     text-transform: var(--heading-case);
     letter-spacing: var(--heading-track);
-    font-weight: 400;
+    font-weight: var(--heading-weight, 400);
     /* длинные русские слова («Комбинированная») не должны вылезать за экран */
     overflow-wrap: break-word;
     hyphens: auto;
@@ -187,6 +272,89 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
     border-radius: inherit;
   }
+  /*
+   * Liquid Glass — только для «плавающих» элементов: нижнее меню, шапка, плашки поверх картинок,
+   * панели действий. Размытие + усиление цвета под стеклом, блик сверху, светящийся край, тень.
+   */
+  .glass,
+  .glass-bar {
+    isolation: isolate;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / var(--glass-hi)) 0%, rgb(255 255 255 / 0) 55%),
+      var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
+  .glass {
+    position: relative;
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0.5px rgb(255 255 255 / var(--glass-edge)),
+      inset 0 -1px 1px rgb(0 0 0 / 0.06),
+      0 12px 32px -10px var(--glass-shadow),
+      0 2px 8px -3px var(--glass-shadow);
+  }
+  /* светящийся край: ярче сверху-слева и снизу-справа, как у стекла на свету */
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    opacity: var(--glass-rim);
+    background: linear-gradient(135deg, rgb(255 255 255 / 0.7), rgb(255 255 255 / 0) 32%, rgb(255 255 255 / 0) 68%, rgb(255 255 255 / 0.35));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  /* полоса во всю ширину (шапка): без рамки по бокам, только линия снизу */
+  .glass-bar {
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / calc(var(--glass-edge) * 0.25)), 0 8px 24px -16px var(--glass-shadow);
+  }
+  /* «капля» основного цвета — главная кнопка в нижнем меню */
+  .glass-primary {
+    background:
+      radial-gradient(120% 90% at 30% 15%, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0) 55%),
+      linear-gradient(180deg, color-mix(in oklab, var(--primary) 88%, white), var(--primary));
+    box-shadow:
+      inset 0 1px 1px rgb(255 255 255 / 0.7),
+      inset 0 -3px 8px rgb(0 0 0 / 0.18),
+      0 10px 26px -8px color-mix(in oklab, var(--primary) 70%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--primary) 60%, black 10%);
+  }
+  /* на компьютере стекло у панели записи не нужно — там обычная кнопка в потоке */
+  @media (min-width: 1024px) {
+    .glass.lg-unglass {
+      background: none;
+      border: 0;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .glass.lg-unglass::before {
+      display: none;
+    }
+  }
+  /* подарочная открытка: в «Аметисте» — градиент, в остальных — основной цвет */
+  .gift-card {
+    background: var(--gift-bg, var(--primary));
+    color: var(--gift-fg, var(--primary-foreground));
+  }
+  /* «Аметист»: заголовок первого экрана светится градиентом, арка — сиянием */
+  [data-skin="violet"] .hero-title {
+    background: linear-gradient(115deg, #ffffff 15%, #dccbff 55%, #f3a8ff 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  [data-skin="violet"] .arch {
+    box-shadow: 0 30px 90px -25px rgb(193 58 224 / 0.55);
+  }
   .eyebrow {
     @apply text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
   }
@@ -195,6 +363,14 @@
   }
   .pb-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+  }
+}
+
+/* Если браузер не умеет размывать фон — делаем стекло почти непрозрачным, чтобы текст читался */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-bar {
+    background: color-mix(in oklab, var(--popover) 94%, transparent);
   }
 }
 

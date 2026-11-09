@@ -23,7 +23,7 @@ export function ClientLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       {master.demo && demoOpen && (
-        <div className="border-b border-border bg-card">
+        <div className="border-b border-border bg-card/70">
           <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6">
             <span className="hidden items-center gap-1.5 text-xs font-medium text-muted-foreground min-[360px]:flex">
               <Palette className="size-3.5" /> <span className="hidden sm:inline">Демо · оформление:</span>
@@ -39,7 +39,7 @@ export function ClientLayout() {
         </div>
       )}
 
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-md">
+      <header className="glass-bar sticky top-0 z-30">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-3">
             <Monogram />
@@ -131,18 +131,21 @@ export function ClientLayout() {
 
       {!IS_EMBED && <InstallHint />}
 
-      {/* Нижняя навигация — как в приложении */}
+      {/* Нижняя навигация — парящая стеклянная «пилюля», как в iOS */}
       {!inBooking && (
-        <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/92 backdrop-blur-md lg:hidden">
-          <div className="mx-auto grid max-w-md grid-cols-5 items-end px-2 pt-2">
+        <nav
+          aria-label="Меню"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:hidden"
+        >
+          <div className="glass pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-end rounded-[1.75rem] p-1.5">
             {NAV.slice(0, 2).map((n) => (
               <TabLink key={n.to} {...n} />
             ))}
-            <Link to="/book" className="-mt-6 flex flex-col items-center gap-1">
-              <span className="grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-black/10 ring-4 ring-background">
+            <Link to="/book" className="-mt-7 flex flex-col items-center gap-1 pb-1.5" aria-label="Записаться">
+              <span className="glass-primary grid size-14 place-items-center rounded-full text-primary-foreground transition-transform active:scale-95">
                 <CalendarPlus className="size-6" />
               </span>
-              <span className="text-[0.68rem] font-medium">Запись</span>
+              <span className="text-[0.66rem] font-semibold">Запись</span>
             </Link>
             {NAV.slice(2).map((n) => (
               <TabLink key={n.to} {...n} />
@@ -160,10 +163,13 @@ function TabLink({ to, label, icon: Icon, end }: (typeof NAV)[number]) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        cn("flex flex-col items-center gap-1 py-1 text-[0.68rem] text-muted-foreground transition-colors", isActive && "font-semibold text-foreground")
+        cn(
+          "flex min-w-0 flex-col items-center gap-0.5 rounded-[1.3rem] py-2 text-[0.66rem] text-muted-foreground transition-colors",
+          isActive && "bg-foreground/10 font-semibold text-foreground",
+        )
       }
     >
-      <Icon className="size-5" strokeWidth={1.6} />
+      <Icon className="size-5" strokeWidth={1.7} />
       {label}
     </NavLink>
   )

@@ -33,7 +33,7 @@ export default function GiftPage() {
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 md:py-16 lg:grid-cols-2 lg:gap-16">
       {/* Превью сертификата */}
       <div className="mx-auto w-full max-w-md lg:sticky lg:top-24 lg:max-w-none lg:self-start">
-        <div className="grain relative flex min-h-48 w-full flex-col overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground shadow-2xl shadow-black/15 sm:min-h-60 sm:p-8">
+        <div className="gift-card grain relative flex min-h-48 w-full flex-col overflow-hidden rounded-3xl p-5 shadow-2xl shadow-black/25 sm:min-h-60 sm:p-8">
           <div className="arch absolute -right-4 -bottom-24 h-52 w-32 opacity-35 sm:-bottom-20 sm:h-64 sm:w-44" />
           <div className="relative flex flex-1 flex-col justify-between gap-5">
             <div className="flex items-center justify-between">

@@ -37,7 +37,7 @@ export default function HomePage() {
           <p className="eyebrow mb-5">
             {master.role} · {master.city}
           </p>
-          <h1 className="font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{master.tagline}</h1>
+          <h1 className="hero-title font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{master.tagline}</h1>
           <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed text-muted-foreground">{master.intro}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 rounded-full px-7 text-[0.95rem]">
@@ -73,7 +73,7 @@ export default function HomePage() {
           {nextLabel && (
             <Link
               to={consult ? `/book?service=${consult.id}` : "/book"}
-              className="absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl border border-border bg-popover/95 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
+              className="glass absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
             >
               <span className="relative flex size-2.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/60" />
@@ -107,7 +107,7 @@ export default function HomePage() {
       {/* ——— С чего начать: консультация ——— */}
       {consult && (
         <section className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="grain relative overflow-hidden rounded-3xl bg-primary px-6 py-10 text-primary-foreground sm:px-10 md:py-14">
+          <div className="gift-card grain relative overflow-hidden rounded-3xl px-6 py-10 sm:px-10 md:py-14">
             <div className="relative z-10 max-w-xl">
               <p className="text-[0.7rem] font-semibold tracking-[0.18em] uppercase opacity-70">Не знаете, с чего начать?</p>
               <h2 className="mt-3 font-heading text-3xl leading-tight sm:text-4xl">Начните с консультации — подберём уход и процедуры под вашу кожу</h2>

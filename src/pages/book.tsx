@@ -288,8 +288,8 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 
 function BottomBar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/92 px-4 pt-3 backdrop-blur-md lg:static lg:mt-8 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-      <div className="mx-auto max-w-2xl">{children}</div>
+    <div className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] lg:static lg:mt-8 lg:p-0">
+      <div className="glass lg-unglass mx-auto max-w-2xl rounded-[1.75rem] p-2 lg:p-0">{children}</div>
     </div>
   )
 }

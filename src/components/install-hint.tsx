@@ -49,7 +49,7 @@ export function InstallHint() {
 
   return (
     <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 lg:bottom-6 lg:right-6 lg:left-auto lg:mx-0 lg:w-96">
-      <div className="flex items-start gap-3 rounded-2xl border border-border bg-popover p-4 shadow-xl shadow-black/10">
+      <div className="glass flex items-start gap-3 rounded-2xl p-4">
         <SquarePlus className="mt-0.5 size-5 shrink-0 text-clay" />
         <div className="min-w-0 flex-1 text-sm">
           <p className="font-medium">Добавьте {master.brand} на экран</p>

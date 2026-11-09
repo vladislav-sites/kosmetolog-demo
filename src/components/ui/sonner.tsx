@@ -14,12 +14,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
+          "--normal-bg": "var(--glass-bg)",
           "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          "--normal-border": "var(--glass-border)",
+          "--border-radius": "1.25rem",
         } as React.CSSProperties
       }
+      toastOptions={{ classNames: { toast: "glass" } }}
       {...props}
     />
   )

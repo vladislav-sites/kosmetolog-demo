@@ -155,7 +155,7 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
 
   return (
     <>
-      <SheetHeader className="sticky top-0 z-10 border-b border-border bg-popover px-5 py-4 pr-14">
+      <SheetHeader className="glass-bar sticky top-0 z-10 px-5 py-4 pr-14">
         <button onClick={onClose} aria-label="Закрыть" className="absolute top-3.5 right-3.5 grid size-9 place-items-center rounded-full hover:bg-muted">
           <X className="size-4" />
         </button>
@@ -285,7 +285,7 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
         )}
       </div>
 
-      <div className="pb-safe sticky bottom-0 z-10 mt-auto flex gap-2 border-t border-border bg-popover px-5 pt-3">
+      <div className="glass-bar pb-safe sticky bottom-0 z-10 mt-auto flex gap-2 border-t border-b-0 border-t-(--glass-border) px-5 pt-3">
         <Button size="lg" className="h-12 flex-1 rounded-full" onClick={save}>
           {isNew ? "Добавить процедуру" : "Сохранить"}
         </Button>

@@ -72,6 +72,7 @@ export function ServiceRow({ service, index }: { service: Service; index?: numbe
 }
 
 const THEMES: { id: ThemeId; label: string; swatch: string[] }[] = [
+  { id: "violet", label: "Аметист", swatch: ["#0c0916", "#bda6ff", "#e28bff"] },
   { id: "milk", label: "Молочное", swatch: ["#f6f1ea", "#a86a4f", "#2f2420"] },
   { id: "olive", label: "Олива", swatch: ["#f1f0e8", "#8f9a73", "#3f4b33"] },
   { id: "noir", label: "Ночь", swatch: ["#121110", "#c9a27a", "#e2cdb0"] },
@@ -88,11 +89,11 @@ export function ThemeSwitcher({ compact, className }: { compact?: boolean; class
           aria-checked={theme === t.id}
           onClick={() => actions.setTheme(t.id)}
           className={cn(
-            "flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3",
+            "flex items-center gap-2 rounded-full border px-2 py-1.5 text-xs font-medium transition-colors sm:px-3",
             theme === t.id ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40",
           )}
         >
-          <span className="flex -space-x-1">
+          <span className="flex -space-x-1.5 sm:-space-x-1">
             {t.swatch.map((c) => (
               <span key={c} className="size-3 rounded-full ring-1 ring-black/10" style={{ background: c }} />
             ))}
