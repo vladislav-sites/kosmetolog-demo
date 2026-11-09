@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router"
 import { toast } from "sonner"
 import { ExternalLink, ImagePlus, Plus, Trash2 } from "lucide-react"
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Portrait, ThemeSwitcher } from "@/components/bits"
-import { actions, useAppState } from "@/lib/store"
+import { actions, getState, useAppState } from "@/lib/store"
 import { compressImage } from "@/lib/image"
 import { formatPhone } from "@/lib/phone"
 
@@ -49,46 +49,77 @@ const toProfile = (f: Form): Profile => ({
 /** Черновик живёт вне компонента: переключилась на «Записи» и обратно — правки на месте */
 let draft: Form | null = null
 
+type Status = "saved" | "pending" | "error" | "invalid"
+
 export function ProfileEditor() {
   const profile = useAppState((s) => s.profile)
   const [f, setF] = useState<Form>(() => draft ?? toForm(profile))
+  const [status, setStatus] = useState<Status>("saved")
   const [busyPhoto, setBusyPhoto] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const fRef = useRef(f)
+  const timer = useRef<number | undefined>(undefined)
 
-  const update = (patch: Partial<Form>) =>
-    setF((prev) => {
-      const next = { ...prev, ...patch }
-      draft = next
-      return next
-    })
-  const dirty = JSON.stringify(toProfile(f)) !== JSON.stringify(toProfile(toForm(profile)))
-  const taglineEmpty = !f.tagline.trim()
-
-  const save = () => {
-    if (taglineEmpty) {
-      toast.error("Заголовок на главной не может быть пустым")
-      document.getElementById("pf-tagline")?.focus()
+  /**
+   * Автосохранение, как везде в кабинете: текст — через секунду после того, как перестала печатать,
+   * удаление, добавление, фото — сразу. Кнопки «Сохранить» нет.
+   */
+  const flush = () => {
+    window.clearTimeout(timer.current)
+    timer.current = undefined
+    const cur = fRef.current
+    const saved = getState().profile
+    const emptyTagline = !cur.tagline.trim()
+    // Пустой заголовок не сохраняем — на сайте остаётся прежний, всё остальное сохраняется
+    const next = { ...toProfile(cur), tagline: emptyTagline ? saved.tagline : cur.tagline.trim() }
+    ownSave.current = next
+    if (JSON.stringify(next) !== JSON.stringify(saved) && !actions.saveProfile(next)) {
+      setStatus("error")
+      toast.error("Не хватило места для фото — изменения не сохранились. Попробуйте фото поменьше.")
+      const back = toForm(getState().profile)
+      fRef.current = back
+      draft = null
+      setF(back)
       return
     }
-    if (actions.saveProfile(toProfile(f))) {
-      draft = null
-      setF(toForm(toProfile(f)))
-      toast.success("Сохранено — уже на сайте")
-    } else {
-      toast.error("Не хватило места для фото. Попробуйте фото поменьше.")
-    }
+    draft = emptyTagline ? cur : null
+    setStatus(emptyTagline ? "invalid" : "saved")
   }
 
-  const reset = () => {
-    draft = null
-    setF(toForm(profile))
+  const update = (patch: Partial<Form>, now = false) => {
+    const next = { ...fRef.current, ...patch }
+    fRef.current = next
+    draft = next
+    setF(next)
+    setStatus("pending")
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(flush, now ? 0 : 900)
   }
+
+  // Ушла на другую вкладку кабинета, не дождавшись автосохранения, — сохраняем сразу
+  useEffect(() => () => {
+    if (timer.current !== undefined) flush()
+  }, [])
+
+  // Профиль поменялся не отсюда («Сбросить демо», другая вкладка браузера) — показываем актуальное
+  const ownSave = useRef(profile)
+  useEffect(() => {
+    if (timer.current !== undefined || profile === ownSave.current) return
+    if (JSON.stringify(profile) === JSON.stringify(toProfile(fRef.current))) return
+    draft = null
+    const fresh = toForm(profile)
+    fRef.current = fresh
+    setF(fresh)
+    setStatus("saved")
+  }, [profile])
+
+  const taglineEmpty = !f.tagline.trim()
 
   const pickPhoto = async (file?: File) => {
     if (!file) return
     setBusyPhoto(true)
     try {
-      update({ portrait: await compressImage(file, 1100) })
+      update({ portrait: await compressImage(file, 1100) }, true)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Не получилось загрузить фото")
     } finally {
@@ -102,7 +133,8 @@ export function ProfileEditor() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-heading text-2xl">Моя страница</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Фото, тексты и контакты на сайте. Меняйте как угодно — клиентки увидят после «Сохранить».</p>
+          <p className="mt-1 text-sm text-muted-foreground">Фото, тексты и контакты на сайте. Всё сохраняется само.</p>
+          <SaveStatus status={status} />
         </div>
         <Button asChild variant="outline" size="sm" className="rounded-full bg-transparent">
           <Link to="/" target="_blank">
@@ -124,7 +156,7 @@ export function ProfileEditor() {
                   <ImagePlus /> {busyPhoto ? "Обрабатываю…" : f.portrait ? "Заменить фото" : "Загрузить фото"}
                 </Button>
                 {f.portrait && (
-                  <Button variant="ghost" className="rounded-full text-destructive hover:text-destructive" onClick={() => update({ portrait: undefined })}>
+                  <Button variant="ghost" className="rounded-full text-destructive hover:text-destructive" onClick={() => update({ portrait: undefined }, true)}>
                     <Trash2 /> Убрать
                   </Button>
                 )}
@@ -185,7 +217,7 @@ export function ProfileEditor() {
                     onChange={(ev) => update({ education: f.education.map((x, j) => (j === i ? { ...x, year: ev.target.value.replace(/[^\d–-]/g, "").slice(0, 9) } : x)) })}
                     className="h-10 w-24 rounded-lg tabular-nums"
                   />
-                  <RemoveButton label="Удалить строку образования" onClick={() => update({ education: f.education.filter((_, j) => j !== i) })} />
+                  <RemoveButton label="Удалить строку образования" onClick={() => update({ education: f.education.filter((_, j) => j !== i) }, true)} />
                 </div>
                 <div className="min-w-0 space-y-2">
                   <Textarea
@@ -236,7 +268,7 @@ export function ProfileEditor() {
                     className="min-h-16 rounded-lg"
                   />
                 </div>
-                <RemoveButton label="Удалить пункт" onClick={() => update({ principles: f.principles.filter((_, j) => j !== i) })} />
+                <RemoveButton label="Удалить пункт" onClick={() => update({ principles: f.principles.filter((_, j) => j !== i) }, true)} />
               </div>
             ))}
             {f.principles.length < 6 && (
@@ -291,21 +323,22 @@ export function ProfileEditor() {
         </Card>
       </div>
 
-      {/* Панель сохранения — появляется, когда есть правки */}
-      {dirty && (
-        <div className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
-          <div className="glass mx-auto flex max-w-xl items-center gap-2 rounded-[1.75rem] p-2 pl-4 animate-in fade-in slide-in-from-bottom-2">
-            <span className="min-w-0 flex-1 text-sm font-medium">Есть несохранённые изменения</span>
-            <Button variant="ghost" className="h-11 shrink-0 rounded-full" onClick={reset}>
-              Отменить
-            </Button>
-            <Button className="h-11 shrink-0 rounded-full px-5" onClick={save}>
-              Сохранить
-            </Button>
-          </div>
-        </div>
-      )}
     </section>
+  )
+}
+
+function SaveStatus({ status }: { status: Status }) {
+  const map: Record<Status, { text: string; cls: string }> = {
+    saved: { text: "✓ Всё сохранено — уже на сайте", cls: "text-emerald-700 dark:text-emerald-400" },
+    pending: { text: "Сохраняю…", cls: "text-muted-foreground" },
+    error: { text: "Не сохранилось — фото слишком большое", cls: "text-destructive" },
+    invalid: { text: "Заголовок пустой — на сайте остался прежний. Остальное сохранено.", cls: "text-destructive" },
+  }
+  const s = map[status]
+  return (
+    <p role="status" aria-live="polite" className={`mt-2 text-xs font-medium ${s.cls}`}>
+      {s.text}
+    </p>
   )
 }
 
