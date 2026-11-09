@@ -4,11 +4,11 @@ import { flushSync } from "react-dom"
  * Анимированные переходы между экранами (View Transitions API — Safari 18+, Chrome).
  * Там, где браузер не умеет, экран просто меняется без анимации.
  *
- * forward / back — «перелистывание» между соседними вкладками (вправо / влево)
- * push / pop     — открыть вложенный экран поверх и вернуться назад
- * morph          — нажатая кнопка «раскрывается» в следующий экран (запись)
+ * none       — без анимации: переключение вкладок нижнего меню (пользователь попросил без перелистывания)
+ * push / pop — открыть вложенный экран поверх и вернуться назад
+ * morph      — нажатая кнопка «раскрывается» в следующий экран (запись)
  */
-export type NavDir = "forward" | "back" | "push" | "pop" | "morph"
+export type NavDir = "none" | "push" | "pop" | "morph"
 
 type VT = { finished: Promise<void>; ready: Promise<void>; updateCallbackDone: Promise<void>; skipTransition?: () => void }
 type DocWithVT = Document & { startViewTransition?: (cb: () => void) => VT }
@@ -16,7 +16,7 @@ type DocWithVT = Document & { startViewTransition?: (cb: () => void) => VT }
 export function withTransition(update: () => void, dir: NavDir): Promise<void> {
   const doc = document as DocWithVT
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  if (!doc.startViewTransition || reduce) {
+  if (dir === "none" || !doc.startViewTransition || reduce) {
     update()
     return Promise.resolve()
   }
@@ -57,16 +57,14 @@ export function tap(ms = 8) {
   }
 }
 
-/** Вкладки нижнего меню сайта — порядок нужен, чтобы понимать, листать вправо или влево */
+/** Вкладки нижнего меню сайта */
 export const CLIENT_TABS = ["/", "/procedures", "/about", "/gift"]
 
-const tabIndex = (path: string) => CLIENT_TABS.indexOf(path === "" ? "/" : path)
+const isTab = (path: string) => CLIENT_TABS.includes(path === "" ? "/" : path)
 
-/** Направление по умолчанию: между вкладками — листаем, вглубь — открываем поверх, к вкладке — назад */
+/** По умолчанию: между вкладками — просто переключаем, вглубь — открываем поверх, к вкладке — назад */
 export function autoDir(fromPath: string, toPath: string): NavDir {
-  const a = tabIndex(fromPath)
-  const b = tabIndex(toPath)
-  if (a !== -1 && b !== -1) return b > a ? "forward" : "back"
-  if (b !== -1) return "pop"
+  if (isTab(fromPath) && isTab(toPath)) return "none"
+  if (isTab(toPath)) return "pop"
   return "push"
 }

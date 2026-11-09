@@ -327,7 +327,8 @@
 
 /*
  * ——— Переходы между экранами (View Transitions) ———
- * Шапка и нижнее меню стоят на месте, листается только содержимое (page).
+ * Шапка и нижнее меню стоят на месте, анимируется только содержимое (page).
+ * Вкладки нижнего меню переключаются мгновенно; анимируются только вложенные экраны и запись.
  * Кнопка «Запись» раскрывается в экран записи (book-sheet).
  */
 @media (prefers-reduced-motion: no-preference) {
@@ -353,19 +354,7 @@
     animation: none;
   }
 
-  /* перелистывание вкладок */
-  html[data-nav="forward"]::view-transition-old(page) {
-    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-out-left;
-  }
-  html[data-nav="forward"]::view-transition-new(page) {
-    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-in-right;
-  }
-  html[data-nav="back"]::view-transition-old(page) {
-    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-out-right;
-  }
-  html[data-nav="back"]::view-transition-new(page) {
-    animation: 0.42s cubic-bezier(0.22, 1, 0.36, 1) both vt-in-left;
-  }
+  /* вкладки нижнего меню переключаются без анимации — по просьбе пользователя */
 
   /* открыть вложенный экран поверх / вернуться */
   html[data-nav="push"]::view-transition-old(page),
@@ -409,11 +398,6 @@
   }
 }
 
-@keyframes vt-out-left {
-  to {
-    transform: translateX(-100%);
-  }
-}
 @keyframes vt-in-right {
   from {
     transform: translateX(100%);
@@ -422,11 +406,6 @@
 @keyframes vt-out-right {
   to {
     transform: translateX(100%);
-  }
-}
-@keyframes vt-in-left {
-  from {
-    transform: translateX(-100%);
   }
 }
 @keyframes vt-recede-left {

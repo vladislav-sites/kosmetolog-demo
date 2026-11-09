@@ -31,7 +31,7 @@ import { Switch } from "@/components/ui/switch"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Monogram } from "@/components/bits"
 import { DURATIONS, ServiceEditor } from "@/components/service-editor"
-import { tap, withTransition } from "@/lib/transition"
+import { tap } from "@/lib/transition"
 import { ProfileEditor } from "@/components/profile-editor"
 import type { Category, Service } from "@/config/types"
 import { actions, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
@@ -112,13 +112,12 @@ function Cabinet() {
   const giftCount = s.gifts.filter((g) => g.status === "new").length
   const countOf = (id: TabId) => (id === "day" ? newCount : id === "gifts" ? giftCount : 0)
 
-  /** Смена вкладки — «перелистывание» влево/вправо, как между экранами приложения */
+  /** Смена вкладки — просто переключение, без перелистывания (так попросил пользователь) */
   const go = (id: TabId) => {
     if (id === tab) return
-    const from = TABS.findIndex((t) => t.id === tab)
-    const to = TABS.findIndex((t) => t.id === id)
     tap()
-    withTransition(() => setTab(id), to > from ? "forward" : "back")
+    setTab(id)
+    window.scrollTo({ top: 0 })
   }
 
   return (
