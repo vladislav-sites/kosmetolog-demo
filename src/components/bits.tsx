@@ -72,7 +72,6 @@ export function ServiceRow({ service, index }: { service: Service; index?: numbe
 }
 
 const THEMES: { id: ThemeId; label: string; swatch: string[] }[] = [
-  { id: "violet", label: "Аметист", swatch: ["#0c0916", "#bda6ff", "#e28bff"] },
   { id: "milk", label: "Молочное", swatch: ["#f6f1ea", "#a86a4f", "#2f2420"] },
   { id: "olive", label: "Олива", swatch: ["#f1f0e8", "#8f9a73", "#3f4b33"] },
   { id: "noir", label: "Ночь", swatch: ["#121110", "#c9a27a", "#e2cdb0"] },

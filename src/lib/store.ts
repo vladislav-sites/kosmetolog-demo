@@ -52,6 +52,8 @@ export type AppState = {
 const KEY = "cosmo-app-state"
 const VERSION = 4
 
+const THEME_IDS: ThemeId[] = ["milk", "olive", "noir"]
+
 export const GIFT_MIN = 100
 export const GIFT_MAX = 1_000_000
 
@@ -114,9 +116,12 @@ function migrate(p: AppState): AppState | null {
   if (s.version === 1) s = { ...s, version: 2, categories: master.categories.map((c) => ({ ...c })) }
   // v2 → v3: номиналы сертификатов стали редактируемыми
   if (s.version === 2) s = { ...s, version: 3, giftAmounts: defaultGiftAmounts() }
-  // v3 → v4: появилась тема «Аметист» — один раз показываем её всем, дальше выбор снова запоминается
+  // v3 → v4: тогда добавляли тему «Аметист» (потом убрана) — сохранённая тема сбрасывается на основную
   if (s.version === 3) s = { ...s, version: 4, theme: master.theme }
-  return s.version === VERSION ? s : null
+  if (s.version !== VERSION) return null
+  // Сохранённая тема могла быть удалена из шаблона (например, «Аметист») — тогда берём основную
+  if (!THEME_IDS.includes(s.theme)) s = { ...s, theme: master.theme }
+  return s
 }
 
 function load(): AppState {

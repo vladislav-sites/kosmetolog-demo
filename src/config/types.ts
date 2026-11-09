@@ -1,4 +1,4 @@
-export type ThemeId = "violet" | "milk" | "olive" | "noir"
+export type ThemeId = "milk" | "olive" | "noir"
 
 export type Service = {
   id: string

@@ -9,7 +9,7 @@
 @import "@fontsource/tenor-sans/cyrillic-400.css";
 @import "@fontsource/tenor-sans/latin-400.css";
 
-@custom-variant dark (&:is([data-skin="noir"] *, [data-skin="violet"] *));
+@custom-variant dark (&:is([data-skin="noir"] *));
 
 @theme inline {
   --font-heading: var(--heading);
@@ -169,51 +169,6 @@
   color-scheme: dark;
 }
 
-/* ——— «Аметист»: тёмно-фиолетовый, контрастный, под жидкое стекло ——— */
-[data-skin="violet"] {
-  --heading: "Manrope Variable", system-ui, sans-serif;
-  --heading-style: normal;
-  --heading-case: none;
-  --heading-track: -0.03em;
-  --heading-weight: 650;
-  --background: #0c0916;
-  --foreground: #f5f1ff;
-  --card: #161029;
-  --card-foreground: #f5f1ff;
-  --popover: #1a1330;
-  --popover-foreground: #f5f1ff;
-  --primary: #bda6ff;
-  --primary-foreground: #12092a;
-  --secondary: #231a3d;
-  --secondary-foreground: #f5f1ff;
-  --muted: #1e1734;
-  --muted-foreground: #ada3cc;
-  --accent: #2a2048;
-  --accent-foreground: #f5f1ff;
-  --destructive: #ff7d96;
-  --border: #2d2449;
-  --input: #3b305f;
-  --ring: #d68bff;
-  --clay: #e28bff;
-  --tint: #261c47;
-  --arch-a: #3a1d78;
-  --arch-b: #c13ae0;
-  --radius: 1.1rem;
-  --glass-bg: rgb(30 21 58 / 0.42);
-  --glass-border: rgb(255 255 255 / 0.14);
-  --glass-hi: 0.16;
-  --glass-edge: 0.32;
-  --glass-rim: 0.75;
-  --glass-shadow: rgb(6 0 24 / 0.65);
-  --glass-sat: 210%;
-  --aurora-1: rgb(124 77 255 / 0.38);
-  --aurora-2: rgb(214 64 238 / 0.24);
-  --aurora-3: rgb(64 110 255 / 0.18);
-  --gift-bg: linear-gradient(135deg, #2b1361 0%, #6a2bd9 55%, #c12fd8 100%);
-  --gift-fg: #ffffff;
-  color-scheme: dark;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -340,20 +295,10 @@
       display: none;
     }
   }
-  /* подарочная открытка: в «Аметисте» — градиент, в остальных — основной цвет */
+  /* подарочная открытка и плашка «Начните с консультации» — основной цвет темы */
   .gift-card {
     background: var(--gift-bg, var(--primary));
     color: var(--gift-fg, var(--primary-foreground));
-  }
-  /* «Аметист»: заголовок первого экрана светится градиентом, арка — сиянием */
-  [data-skin="violet"] .hero-title {
-    background: linear-gradient(115deg, #ffffff 15%, #dccbff 55%, #f3a8ff 95%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  [data-skin="violet"] .arch {
-    box-shadow: 0 30px 90px -25px rgb(193 58 224 / 0.55);
   }
   .eyebrow {
     @apply text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground;

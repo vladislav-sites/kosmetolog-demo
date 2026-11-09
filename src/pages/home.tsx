@@ -37,7 +37,7 @@ export default function HomePage() {
           <p className="eyebrow mb-5">
             {master.role} · {master.city}
           </p>
-          <h1 className="hero-title font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{master.tagline}</h1>
+          <h1 className="font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{master.tagline}</h1>
           <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed text-muted-foreground">{master.intro}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 rounded-full px-7 text-[0.95rem]">
