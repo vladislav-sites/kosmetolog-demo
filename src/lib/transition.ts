@@ -48,6 +48,9 @@ export function withTransition(update: () => void, dir: NavDir): Promise<void> {
 /** Короткий «тик» под пальцем там, где телефон это умеет (Android). На iPhone — без вибрации. */
 export function tap(ms = 8) {
   try {
+    // только после настоящего касания — иначе браузер ругается в консоль
+    const ua = (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation
+    if (ua && !ua.isActive) return
     navigator.vibrate?.(ms)
   } catch {
     /* ignore */
