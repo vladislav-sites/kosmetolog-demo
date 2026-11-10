@@ -33,6 +33,7 @@ import { Monogram } from "@/components/bits"
 import { DURATIONS, ServiceEditor } from "@/components/service-editor"
 import { tap } from "@/lib/transition"
 import { ProfileEditor } from "@/components/profile-editor"
+import { BookingEditor } from "@/components/booking-editor"
 import type { Category, Service } from "@/config/types"
 import { actions, getState, GIFT_MAX, GIFT_MIN, useAppState, type Booking, type BookingStatus } from "@/lib/store"
 import { bookingEnd, dayKey, dur, fromMin, parseLocal, rub } from "@/lib/time"
@@ -250,8 +251,13 @@ const STATUS: Record<BookingStatus, { label: string; cls: string }> = {
 function DayTab() {
   const s = useAppState((st) => st)
   const [day, setDay] = useState(startOfDay(new Date()))
-  // столько же дней, сколько открыто для записи на сайте — иначе дальние записи не видно
-  const days = Array.from({ length: master.bookingHorizonDays + 1 }, (_, i) => addDays(startOfDay(new Date()), i))
+  const [adding, setAdding] = useState<Date | null>(null)
+  // столько же дней, сколько открыто для записи на сайте — иначе дальние записи не видно;
+  // мастер может вписать запись и дальше — тогда лента дотягивается до неё
+  const furthest = s.bookings
+    .filter((b) => b.status !== "cancelled")
+    .reduce((m, b) => Math.max(m, differenceInCalendarDays(parseLocal(b.start), new Date())), 0)
+  const days = Array.from({ length: Math.max(master.bookingHorizonDays, furthest) + 1 }, (_, i) => addDays(startOfDay(new Date()), i))
 
   const list = s.bookings
     .filter((b) => isSameDay(parseLocal(b.start), day))
@@ -270,6 +276,13 @@ function DayTab() {
 
   return (
     <section>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-heading text-2xl">Записи</h2>
+        <Button className="rounded-full" onClick={() => setAdding(day)}>
+          <Plus /> Добавить запись
+        </Button>
+      </div>
+
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <Kpi label="Сегодня" value={String(todayCount)} hint="записей" />
         <Kpi label="7 дней" value={rub(weekRevenue)} hint="ожидается" />
@@ -288,6 +301,7 @@ function DayTab() {
           return (
             <button
               key={d.toISOString()}
+              data-day-active={active || undefined}
               onClick={() => setDay(d)}
               className={cn(
                 "flex w-14 shrink-0 flex-col items-center rounded-2xl border py-2.5 transition-colors",
@@ -335,6 +349,16 @@ function DayTab() {
           <BookingCard key={b.id} b={b} />
         ))}
       </div>
+
+      <BookingEditor
+        day={adding}
+        onClose={() => setAdding(null)}
+        onAdded={(d) => {
+          setDay(startOfDay(d))
+          // лента дней прокручивается к выбранному дню
+          requestAnimationFrame(() => document.querySelector("[data-day-active]")?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }))
+        }}
+      />
     </section>
   )
 }
@@ -379,22 +403,28 @@ function BookingCard({ b }: { b: Booking }) {
         <div className="flex flex-wrap items-center gap-2">
           <p className="font-medium">{b.name}</p>
           <span className={cn("rounded-full px-2 py-0.5 text-[0.65rem] font-semibold", st.cls)}>{st.label}</span>
+          {b.source === "master" && <span className="text-[0.7rem] text-muted-foreground">добавлена вами</span>}
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {b.serviceTitle} · {dur(b.duration)} · {rub(b.price)}
+          {!digits && " · без телефона"}
         </p>
         {b.comment && <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm">«{b.comment}»</p>}
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-full bg-transparent">
-            <a href={`tel:+${digits}`}>
-              <Phone /> Позвонить
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full bg-transparent">
-            <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer">
-              <MessageCircle /> Написать
-            </a>
-          </Button>
+          {digits && (
+            <>
+              <Button asChild variant="outline" size="sm" className="rounded-full bg-transparent">
+                <a href={`tel:+${digits}`}>
+                  <Phone /> Позвонить
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="rounded-full bg-transparent">
+                <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer">
+                  <MessageCircle /> Написать
+                </a>
+              </Button>
+            </>
+          )}
           {b.status === "new" && (
             <Button size="sm" className="rounded-full" onClick={() => actions.setBookingStatus(b.id, "confirmed")}>
               <Check /> Подтвердить

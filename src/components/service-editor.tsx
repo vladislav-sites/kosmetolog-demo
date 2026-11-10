@@ -329,7 +329,7 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
   )
 }
 
-function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: React.ReactNode }) {
+export function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="min-w-0 space-y-2">
       <Label htmlFor={id} className="flex flex-wrap items-baseline gap-x-2">

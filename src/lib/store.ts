@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react"
 import { addDays, format } from "date-fns"
 import { master } from "@/config/master"
 import type { Category, Profile, Service, ThemeId, WorkDay } from "@/config/types"
+import { parseLocal } from "@/lib/time"
 
 /**
  * Слой данных. Сейчас всё хранится в браузере (localStorage) — для демо.
@@ -20,10 +21,25 @@ export type Booking = {
   start: string
   duration: number
   name: string
+  /** Пустая строка — мастер добавила запись без телефона */
   phone: string
   comment?: string
   status: BookingStatus
   createdAt: string
+  /** "master" — мастер внесла запись сама в кабинете; нет поля — клиентка записалась через сайт.
+   *  Поле необязательное, поэтому старые сохранения подходят без шага в `migrate`. */
+  source?: "master"
+}
+
+/** Пересекается ли время с другой (не отменённой) записью */
+export function isBusy(bookings: Booking[], start: string, duration: number, ignoreId?: string) {
+  const a = parseLocal(start).getTime()
+  const b = a + duration * 60_000
+  return bookings.some((x) => {
+    if (x.id === ignoreId || x.status === "cancelled") return false
+    const xa = parseLocal(x.start).getTime()
+    return a < xa + x.duration * 60_000 && b > xa
+  })
 }
 
 export type GiftRequest = {
@@ -230,6 +246,14 @@ export const getState = () => state
 export const actions = {
   addBooking(b: Omit<Booking, "id" | "status" | "createdAt">): Booking {
     const booking: Booking = { ...b, id: uid(), status: "new", createdAt: new Date().toISOString() }
+    commit({ ...state, bookings: [...state.bookings, booking] })
+    return booking
+  },
+  /** Запись, которую мастер внесла сама (клиентка позвонила, написала в мессенджер).
+   *  Сразу подтверждена. null — время уже занято другой записью. */
+  addManualBooking(b: Omit<Booking, "id" | "status" | "createdAt" | "source">): Booking | null {
+    if (isBusy(state.bookings, b.start, b.duration)) return null
+    const booking: Booking = { ...b, id: uid(), status: "confirmed", source: "master", createdAt: new Date().toISOString() }
     commit({ ...state, bookings: [...state.bookings, booking] })
     return booking
   },
