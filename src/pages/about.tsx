@@ -1,3 +1,4 @@
+import { cn } from "cn"
 import { TLink } from "@/components/tlink"
 import { ArrowRight, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,10 +15,13 @@ export default function AboutPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 md:py-16">
-      <div className="grid gap-10 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
-        <div className="mx-auto w-full max-w-sm md:sticky md:top-24 md:self-start">
-          <Portrait src={p.portrait} />
-        </div>
+      {/* Фото нет — нет и арки с инициалами: текст в одну колонку */}
+      <div className={cn("grid gap-10", p.portrait ? "md:grid-cols-[0.85fr_1.15fr] md:gap-16" : "mx-auto max-w-3xl")}>
+        {p.portrait && (
+          <div className="mx-auto w-full max-w-sm md:sticky md:top-24 md:self-start">
+            <Portrait src={p.portrait} />
+          </div>
+        )}
 
         <div className="min-w-0">
           <p className="eyebrow mb-4">Обо мне</p>

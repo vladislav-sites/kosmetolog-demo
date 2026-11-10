@@ -3,7 +3,8 @@ import { TLink } from "@/components/tlink"
 import { ArrowLeft, ArrowRight, CalendarClock, Clock, Repeat } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Disclaimer, PhotoTile } from "@/components/bits"
+import { cn } from "cn"
+import { Disclaimer } from "@/components/bits"
 import { useAppState } from "@/lib/store"
 import { dur, plural, price } from "@/lib/time"
 
@@ -35,10 +36,13 @@ export default function ProcedurePage() {
         <ArrowLeft className="size-4" /> Все процедуры
       </TLink>
 
-      <div className="mt-6 grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-14">
-        <div className="min-w-0 md:sticky md:top-24 md:self-start">
-          <PhotoTile service={s} className="max-h-[420px] md:max-h-none" />
-        </div>
+      {/* Нет фото — нет и заглушки: название и цена сразу на первом экране */}
+      <div className={cn("mt-6 grid gap-10", s.photo ? "md:grid-cols-[0.8fr_1.2fr] md:gap-14" : "max-w-3xl")}>
+        {s.photo && (
+          <div className="min-w-0 md:sticky md:top-24 md:self-start">
+            <img src={s.photo} alt="" className="aspect-[4/5] max-h-[420px] w-full rounded-xl object-cover md:max-h-none" />
+          </div>
+        )}
 
         <div className="min-w-0">
           {cat && <p className="eyebrow mb-3">{cat.title}</p>}

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react"
 import { addDays, format } from "date-fns"
 import { master } from "@/config/master"
 import type { Category, Profile, Service, ThemeId, WorkDay } from "@/config/types"
-import { parseLocal } from "@/lib/time"
+import { fromMin, parseLocal, toMin } from "@/lib/time"
 
 /**
  * Слой данных. Сейчас всё хранится в браузере (localStorage) — для демо.
@@ -12,11 +12,21 @@ import { parseLocal } from "@/lib/time"
 
 export type BookingStatus = "new" | "confirmed" | "done" | "cancelled"
 
+/** Одна процедура внутри записи, когда клиентка выбрала несколько сразу */
+export type BookingItem = { serviceId: string; title: string; price: number; duration: number }
+
 export type Booking = {
   id: string
+  /** Первая (или единственная) процедура */
   serviceId: string
+  /** Несколько процедур — названия через « + » */
   serviceTitle: string
+  /** Сумма по всем процедурам */
   price: number
+  /** «от» перед суммой — если хоть у одной процедуры цена «от» */
+  priceFrom?: boolean
+  /** Есть, только если процедур в записи больше одной. Необязательное — старые сохранения подходят без шага в `migrate` */
+  items?: BookingItem[]
   /** Локальное время, "YYYY-MM-DDTHH:mm" */
   start: string
   duration: number
@@ -77,18 +87,36 @@ export const GIFT_MAX = 1_000_000
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
+/**
+ * Демо-записи. Дни и время подгоняются под график из master.ts: запись всегда в рабочий день
+ * и в рабочие часы — иначе в демо видно запись, на которую через сайт попасть невозможно.
+ */
 function demoBookings(): Booking[] {
   const today = new Date()
-  const d = (offset: number) => format(addDays(today, offset), "yyyy-MM-dd")
   const svc = (id: string) => master.services.find((s) => s.id === id)!
-  const mk = (offset: number, time: string, serviceId: string, name: string, phone: string, status: BookingStatus): Booking => {
+  const works = (d: Date) => master.week[d.getDay()]?.enabled
+  /** Ближайший рабочий день от today+offset в сторону dir */
+  const workDay = (offset: number, dir: 1 | -1) => {
+    let d = addDays(today, offset)
+    for (let i = 0; i < 14 && !works(d); i++) d = addDays(d, dir)
+    return d
+  }
+  /** Рабочие дни, начиная с завтрашнего */
+  const upcoming: Date[] = []
+  for (let i = 1; upcoming.length < 3 && i < 30; i++) if (works(addDays(today, i))) upcoming.push(addDays(today, i))
+
+  const mk = (day: Date, afterOpen: number, serviceId: string, name: string, phone: string, status: BookingStatus): Booking => {
     const s = svc(serviceId)
+    const wd = master.week[day.getDay()]
+    // через afterOpen минут после открытия, но так, чтобы процедура закончилась до закрытия
+    const t = Math.max(toMin(wd.from), Math.min(toMin(wd.from) + afterOpen, toMin(wd.to) - s.duration))
     return {
       id: uid(),
       serviceId,
       serviceTitle: s.title,
       price: s.price,
-      start: `${d(offset)}T${time}`,
+      priceFrom: s.priceFrom,
+      start: `${format(day, "yyyy-MM-dd")}T${fromMin(t)}`,
       duration: s.duration,
       name,
       phone,
@@ -96,14 +124,19 @@ function demoBookings(): Booking[] {
       createdAt: new Date().toISOString(),
     }
   }
+  const [d1, d2, d3] = upcoming
   return [
-    mk(-40, "12:00", "us-clean", "Алина", "+7 900 111-22-33", "done"),
-    mk(-16, "15:00", "almond-peel", "Марина", "+7 900 222-33-44", "done"),
-    mk(-9, "11:00", "sculpt-massage", "Ольга", "+7 900 333-44-55", "done"),
-    mk(1, "11:00", "consult", "Екатерина", "+7 900 444-55-66", "new"),
-    mk(1, "14:00", "combo-clean", "Диана", "+7 900 555-66-77", "confirmed"),
-    mk(2, "12:30", "almond-peel", "Марина", "+7 900 222-33-44", "confirmed"),
-    mk(3, "16:00", "hydra-care", "Ксения", "+7 900 666-77-88", "new"),
+    mk(workDay(-40, -1), 120, "us-clean", "Алина", "+7 900 111-22-33", "done"),
+    mk(workDay(-16, -1), 180, "almond-peel", "Марина", "+7 900 222-33-44", "done"),
+    mk(workDay(-9, -1), 60, "sculpt-massage", "Ольга", "+7 900 333-44-55", "done"),
+    ...(d1
+      ? [
+          mk(d1, 0, "consult", "Екатерина", "+7 900 444-55-66", "new"),
+          mk(d1, 120, "combo-clean", "Диана", "+7 900 555-66-77", "confirmed"),
+        ]
+      : []),
+    ...(d2 ? [mk(d2, 30, "almond-peel", "Марина", "+7 900 222-33-44", "confirmed")] : []),
+    ...(d3 ? [mk(d3, 180, "hydra-care", "Ксения", "+7 900 666-77-88", "new")] : []),
   ]
 }
 

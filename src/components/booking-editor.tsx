@@ -98,7 +98,7 @@ function EditorBody({ day, onClose, onAdded }: { day: Date; onClose: () => void;
     time: date && !chosenTime ? "На этот день нет свободного времени такой длины" : "",
     service: !serviceId ? "Какая процедура?" : serviceId === CUSTOM && !customTitle.trim() ? "Как называется процедура?" : "",
     price: price === undefined ? "Укажите цену" : "",
-    name: !name.trim() ? "Как зовут клиентку?" : "",
+    name: !name.trim() ? "Как зовут клиента?" : "",
     phone: !phoneEmpty && !phoneValid(phone) ? "Допишите номер или сотрите его" : "",
   }
   const hasErrors = Object.values(errors).some(Boolean)
@@ -143,7 +143,7 @@ function EditorBody({ day, onClose, onAdded }: { day: Date; onClose: () => void;
           <X className="size-4" />
         </button>
         <SheetTitle className="font-heading text-xl">Новая запись</SheetTitle>
-        <SheetDescription>Для клиенток, которые записались не через сайт. Время сразу станет занятым на сайте.</SheetDescription>
+        <SheetDescription>Для тех, кто записался не через сайт. Время сразу станет занятым на сайте.</SheetDescription>
       </SheetHeader>
 
       <div className="space-y-6 px-5 py-5">
@@ -232,7 +232,7 @@ function EditorBody({ day, onClose, onAdded }: { day: Date; onClose: () => void;
           </p>
         )}
 
-        <Field id="bk-name" label="Имя клиентки" error={tried ? errors.name : ""}>
+        <Field id="bk-name" label="Имя клиента" error={tried ? errors.name : ""}>
           <Input id="bk-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Анна" autoComplete="off" className="h-11 rounded-xl" />
         </Field>
 
@@ -250,7 +250,7 @@ function EditorBody({ day, onClose, onAdded }: { day: Date; onClose: () => void;
         </Field>
 
         <Field id="bk-comment" label="Заметка" hint="необязательно, видите только вы">
-          <Textarea id="bk-comment" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Например: записалась по телефону, чувствительная кожа" className="min-h-20 rounded-xl" />
+          <Textarea id="bk-comment" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Например: запись по телефону, чувствительная кожа" className="min-h-20 rounded-xl" />
         </Field>
       </div>
 

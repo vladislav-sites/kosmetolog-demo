@@ -31,27 +31,63 @@ export default function HomePage() {
     ? `${isToday(nextSlot.d) ? "сегодня" : isTomorrow(nextSlot.d) ? "завтра" : fmtDayShort(nextSlot.d)}, ${nextSlot.time}`
     : null
 
+  // Фото мастера нет — нет ни арки, ни инициалов: первый экран в одну колонку,
+  // на компьютере текст по центру, плашка «Ближайшее окно» — под кнопкой
+  const photo = !!p.portrait
+
+  const nextSlotLink = nextLabel && (
+    <TLink
+      to={`/book?service=${consult!.id}&at=${dayKey(nextSlot!.d)}T${nextSlot!.time}`}
+      morph
+      className={cn(
+        "glass press flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-transform hover:-translate-y-0.5",
+        photo
+          ? "absolute -bottom-5 left-1/2 w-[86%] -translate-x-1/2 lg:-left-8 lg:w-auto lg:translate-x-0"
+          : "mt-6 w-full sm:w-80 lg:mx-auto",
+      )}
+    >
+      <span className="relative flex size-2.5">
+        <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/60" />
+        <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+      </span>
+      <span className="text-sm leading-tight">
+        <span className="block text-xs text-muted-foreground">Ближайшее окно</span>
+        <span className="font-medium">{nextLabel}</span>
+      </span>
+      <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+    </TLink>
+  )
+
   return (
     <>
       {/* ——— Первый экран ——— */}
-      <section className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-8 pb-16 sm:px-6 md:pt-16 md:pb-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
-        <div className="min-w-0">
+      <section
+        className={cn(
+          "mx-auto grid max-w-6xl items-center gap-14 px-4 pt-8 pb-16 sm:px-6 md:pt-16 md:pb-20",
+          photo ? "lg:grid-cols-[1.1fr_0.9fr] lg:gap-14" : "lg:pt-24 lg:pb-24",
+        )}
+      >
+        <div className={cn("min-w-0", !photo && "lg:mx-auto lg:max-w-3xl lg:text-center")}>
           <p className="eyebrow mb-5">
             {[p.role, p.city].filter(Boolean).join(" · ")}
           </p>
           <h1 className="font-heading text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">{p.tagline}</h1>
-          {p.intro && <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed whitespace-pre-line text-muted-foreground">{p.intro}</p>}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          {p.intro && (
+            <p className={cn("mt-6 max-w-lg text-[1.02rem] leading-relaxed whitespace-pre-line text-muted-foreground", !photo && "lg:mx-auto lg:max-w-xl")}>
+              {p.intro}
+            </p>
+          )}
+          <div className={cn("mt-8 flex flex-col gap-3 sm:flex-row", !photo && "lg:justify-center")}>
+            {/* Одна главная кнопка — к процедурам. «Записаться на консультацию» здесь убрали:
+                она перетягивала внимание, и клиентки попадали в запись, не выбрав процедуру */}
             <Button asChild size="lg" className="h-12 rounded-full px-7 text-[0.95rem]">
-              <TLink to={consult ? `/book?service=${consult.id}` : "/book"} morph>
-                Записаться на консультацию <ArrowRight />
+              <TLink to="/procedures">
+                Процедуры и цены <ArrowRight />
               </TLink>
             </Button>
-            <Button asChild variant="outline" size="lg" className="h-12 rounded-full bg-transparent px-7 text-[0.95rem]">
-              <TLink to="/procedures">Процедуры и цены</TLink>
-            </Button>
           </div>
-          <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-border pt-6">
+          {!photo && nextSlotLink}
+          <dl className={cn("mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-border pt-6", !photo && "lg:mx-auto")}>
             {p.experienceYears > 0 && (
               <Fact value={String(p.experienceYears)} label={plural(p.experienceYears, "год практики", "года практики", "лет практики")} />
             )}
@@ -61,26 +97,12 @@ export default function HomePage() {
           </dl>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm lg:max-w-none">
-          <Portrait src={p.portrait} />
-          {nextLabel && (
-            <TLink
-              to={`/book?service=${consult!.id}&at=${dayKey(nextSlot!.d)}T${nextSlot!.time}`}
-              morph
-              className="glass press absolute -bottom-5 left-1/2 flex w-[86%] -translate-x-1/2 items-center gap-3 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5 lg:-left-8 lg:w-auto lg:translate-x-0"
-            >
-              <span className="relative flex size-2.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/60" />
-                <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
-              </span>
-              <span className="text-sm leading-tight">
-                <span className="block text-xs text-muted-foreground">Ближайшее окно</span>
-                <span className="font-medium">{nextLabel}</span>
-              </span>
-              <ArrowRight className="ml-auto size-4 text-muted-foreground" />
-            </TLink>
-          )}
-        </div>
+        {photo && (
+          <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm lg:max-w-none">
+            <Portrait src={p.portrait} />
+            {nextSlotLink}
+          </div>
+        )}
       </section>
 
       {/* ——— Процедуры ——— */}
@@ -142,7 +164,7 @@ export default function HomePage() {
           <Gift className="size-7 text-clay" strokeWidth={1.5} />
           <div>
             <p className="font-heading text-2xl">Подарочный сертификат</p>
-            <p className="mt-2 text-sm text-muted-foreground">На сумму или на процедуру. Красивая открытка — в мессенджер или распечатанной.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Сумма на выбор, процедуру получатель выберет сам. Красивая открытка — в мессенджер или распечатанной.</p>
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium">
               Оформить <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </span>

@@ -47,18 +47,6 @@ export function SectionTitle({ eyebrow, title, children, className }: { eyebrow?
   )
 }
 
-/** Плитка-заглушка под фото: арка с инициалом процедуры */
-export function PhotoTile({ service, className }: { service: Service; className?: string }) {
-  if (service.photo)
-    return <img src={service.photo} alt="" className={cn("aspect-[4/5] w-full rounded-xl object-cover", className)} />
-  return (
-    <div className={cn("grain relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-tint", className)}>
-      <div className="arch absolute inset-x-[18%] top-[14%] bottom-0 opacity-90" />
-      <span className="absolute bottom-3 left-4 font-heading text-4xl text-foreground/70">{service.title[0]}</span>
-    </div>
-  )
-}
-
 export function ServiceRow({ service, index }: { service: Service; index?: number }) {
   return (
     <TLink

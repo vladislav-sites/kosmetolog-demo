@@ -12,9 +12,9 @@ export function Consent({ checked, onChange, error }: { checked: boolean; onChan
       <Checkbox id={id} checked={checked} onCheckedChange={(v) => onChange(v === true)} className="mt-0.5" />
       <span>
         <label htmlFor={id} className="cursor-pointer">
-          Согласна на обработку персональных данных
+          Даю согласие на обработку персональных данных
         </label>{" "}
-        согласно{" "}
+        по{" "}
         {/* в новой вкладке: иначе уход на политику стирает заполненную запись */}
         <Link to="/privacy" target={IS_EMBED ? undefined : "_blank"} rel="noopener" className="underline underline-offset-4">
           политике конфиденциальности

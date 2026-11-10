@@ -27,6 +27,9 @@ export default function DonePage() {
 
   const svc = services.find((s) => s.id === b.serviceId)
   const start = parseLocal(b.start)
+  // подготовка по всем процедурам визита, без повторов
+  const ids = b.items?.map((i) => i.serviceId) ?? [b.serviceId]
+  const prep = [...new Set(ids.flatMap((id) => services.find((s) => s.id === id)?.prep ?? []))]
 
   const downloadIcs = () => {
     const blob = new Blob([icsFor(b, [profile.city, profile.address].filter(Boolean).join(", "), profile.name)], { type: "text/calendar;charset=utf-8" })
@@ -57,10 +60,25 @@ export default function DonePage() {
           </p>
         </div>
         <div className="space-y-3 px-5 py-4 text-sm">
-          <div className="flex justify-between gap-4">
-            <span>{b.serviceTitle}</span>
-            <span className="font-semibold tabular-nums">{price(b.price, svc?.priceFrom)}</span>
-          </div>
+          {b.items ? (
+            <>
+              {b.items.map((i) => (
+                <div key={i.serviceId} className="flex justify-between gap-4">
+                  <span>{i.title}</span>
+                  <span className="whitespace-nowrap text-muted-foreground tabular-nums">{dur(i.duration)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between gap-4 border-t border-border pt-3">
+                <span>Итого</span>
+                <span className="font-semibold whitespace-nowrap tabular-nums">{price(b.price, b.priceFrom)}</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between gap-4">
+              <span>{b.serviceTitle}</span>
+              <span className="font-semibold whitespace-nowrap tabular-nums">{price(b.price, b.priceFrom ?? svc?.priceFrom)}</span>
+            </div>
+          )}
           <div className="flex items-start gap-2 text-muted-foreground">
             <MapPin className="mt-0.5 size-4 shrink-0" />
             <span>{[profile.city, profile.address, profile.addressNote].filter(Boolean).join(", ")}</span>
@@ -68,11 +86,11 @@ export default function DonePage() {
         </div>
       </div>
 
-      {!!svc?.prep?.length && (
+      {prep.length > 0 && (
         <div className="mt-6 rounded-2xl border border-border p-5">
           <p className="font-medium">Перед визитом</p>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            {svc.prep.map((p) => (
+            {prep.map((p) => (
               <li key={p}>{p}</li>
             ))}
           </ul>

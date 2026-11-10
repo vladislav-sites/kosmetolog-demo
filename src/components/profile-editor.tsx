@@ -105,6 +105,22 @@ export function ProfileEditor() {
     if (timer.current !== undefined) flush()
   }, [])
 
+  // Свернула или закрыла приложение, не дождавшись автосохранения, — тоже сохраняем сразу
+  const flushRef = useRef(flush)
+  flushRef.current = flush
+  useEffect(() => {
+    const now = () => {
+      if (timer.current !== undefined) flushRef.current()
+    }
+    const onVis = () => document.visibilityState === "hidden" && now()
+    document.addEventListener("visibilitychange", onVis)
+    window.addEventListener("pagehide", now)
+    return () => {
+      document.removeEventListener("visibilitychange", onVis)
+      window.removeEventListener("pagehide", now)
+    }
+  }, [])
+
   // Профиль поменялся не отсюда («Сбросить демо», другая вкладка браузера) — показываем актуальное
   const ownSave = useRef(profile)
   useEffect(() => {

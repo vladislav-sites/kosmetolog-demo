@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router"
 import { addDays, differenceInCalendarDays, format, isSameDay, isToday, startOfDay } from "date-fns"
 import { ru } from "date-fns/locale"
@@ -32,6 +32,7 @@ import { NativeSelect } from "@/components/ui/native-select"
 import { Monogram } from "@/components/bits"
 import { DURATIONS, ServiceEditor } from "@/components/service-editor"
 import { tap } from "@/lib/transition"
+import { cancelSave, flushSave, isSavePending, scheduleSave, useSaveKey, useSavePending } from "@/lib/autosave"
 import { ProfileEditor } from "@/components/profile-editor"
 import { BookingEditor } from "@/components/booking-editor"
 import type { Category, Service } from "@/config/types"
@@ -406,7 +407,8 @@ function BookingCard({ b }: { b: Booking }) {
           {b.source === "master" && <span className="text-[0.7rem] text-muted-foreground">добавлена вами</span>}
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {b.serviceTitle} · {dur(b.duration)} · {rub(b.price)}
+          {b.serviceTitle} · {dur(b.duration)} · {b.priceFrom && "от "}
+          {rub(b.price)}
           {!digits && " · без телефона"}
         </p>
         {b.comment && <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm">«{b.comment}»</p>}
@@ -430,7 +432,8 @@ function BookingCard({ b }: { b: Booking }) {
               <Check /> Подтвердить
             </Button>
           )}
-          {b.status === "confirmed" && (
+          {/* «Пришла» — только когда время визита наступило: отметить завтрашний визит нельзя */}
+          {b.status === "confirmed" && start <= new Date() && (
             <Button size="sm" variant="secondary" className="rounded-full" onClick={() => actions.setBookingStatus(b.id, "done")}>
               <Check /> Пришла
             </Button>
@@ -504,7 +507,8 @@ function ServicesTab() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-heading text-2xl">Процедуры и цены</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Изменения сразу видны на сайте. Длительность — сколько времени занимает запись.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Всё сохраняется само и сразу видно на сайте. Длительность — сколько времени занимает запись.</p>
+          <AutosaveStatus />
         </div>
         <Button className="rounded-full" onClick={() => setEditing(null)}>
           <Plus /> Новая процедура
@@ -583,26 +587,7 @@ function ServiceCard({ svc, first, last, onEdit }: { svc: Service; first: boolea
               </label>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:max-w-md">
-              <label className="space-y-1">
-                <span className="text-xs text-muted-foreground">Цена, ₽</span>
-                <Input
-                  key={svc.price}
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  step={100}
-                  defaultValue={svc.price}
-                  onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                  onBlur={(e) => {
-                    const v = Math.max(0, Number(e.target.value) || 0)
-                    if (v !== svc.price) {
-                      actions.updateService(svc.id, { price: v })
-                      toast.success(`${svc.title}: ${rub(v)}`)
-                    }
-                  }}
-                  className="h-10 rounded-xl tabular-nums"
-                />
-              </label>
+              <PriceField svc={svc} />
               <label className="space-y-1">
                 <span className="text-xs text-muted-foreground">Длительность</span>
                 <NativeSelect
@@ -632,6 +617,133 @@ function ServiceCard({ svc, first, last, onEdit }: { svc: Service; first: boolea
               </Button>
             </div>
           </div>
+  )
+}
+
+/**
+ * Цена процедуры: сохраняется сама через секунду после ввода, при уходе с поля и при сворачивании
+ * приложения (`lib/autosave.ts`). Пустое поле не сохраняется — бесплатно = явный 0.
+ */
+function PriceField({ svc }: { svc: Service }) {
+  const key = useSaveKey()
+  const [v, setV] = useState(String(svc.price))
+  const [justSaved, setJustSaved] = useState(false)
+  const focused = useRef(false)
+
+  // цену поменяли не отсюда (редактор процедуры, «Сбросить демо») — показываем новую, если сейчас не печатают
+  useEffect(() => {
+    if (!focused.current && !isSavePending(key)) setV(String(svc.price))
+  }, [svc.price, key])
+
+  // «✓ сохранено» у поля гаснет через пару секунд
+  useEffect(() => {
+    if (!justSaved) return
+    const t = window.setTimeout(() => setJustSaved(false), 2000)
+    return () => window.clearTimeout(t)
+  }, [justSaved])
+
+  const save = (raw: string) => {
+    if (raw.trim() === "") return
+    const n = Math.max(0, Math.round(Number(raw)) || 0)
+    const cur = getState().services.find((s) => s.id === svc.id)
+    if (!cur || n === cur.price) return
+    actions.updateService(svc.id, { price: n })
+    setJustSaved(true)
+  }
+
+  return (
+    <label className="space-y-1">
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        Цена, ₽
+        {justSaved && <span className="text-emerald-700 animate-in fade-in dark:text-emerald-400">✓ сохранено</span>}
+      </span>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={0}
+        step={100}
+        value={v}
+        onFocus={() => (focused.current = true)}
+        onChange={(e) => {
+          const raw = e.target.value
+          setV(raw)
+          setJustSaved(false)
+          if (raw.trim() === "") cancelSave(key)
+          else scheduleSave(key, () => save(raw))
+        }}
+        onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+        onBlur={() => {
+          focused.current = false
+          flushSave(key)
+          // стёрла и ушла — возвращаем сохранённую цену, а не ставим «Бесплатно»
+          if (v.trim() === "") setV(String(getState().services.find((s) => s.id === svc.id)?.price ?? svc.price))
+        }}
+        className="h-10 rounded-xl tabular-nums"
+      />
+    </label>
+  )
+}
+
+/**
+ * Номинал сертификата — сохраняется так же, как цена. Сумма вне диапазона не сохраняется:
+ * пока печатает — тихая подсказка, ушла с поля — возвращаем прежнюю сумму и говорим почему.
+ */
+function AmountField({ index, amount }: { index: number; amount: number }) {
+  const key = useSaveKey()
+  const [v, setV] = useState(String(amount))
+  const focused = useRef(false)
+  const valid = (raw: string) => {
+    const n = Number(raw.replace(/\s/g, ""))
+    return raw.trim() !== "" && Number.isFinite(n) && n >= GIFT_MIN && n <= GIFT_MAX
+  }
+
+  useEffect(() => {
+    if (!focused.current && !isSavePending(key)) setV(String(amount))
+  }, [amount, key])
+
+  const save = (raw: string) => {
+    const n = Number(raw.replace(/\s/g, ""))
+    if (n !== getState().giftAmounts[index]) actions.setGiftAmount(index, n)
+  }
+
+  return (
+    <label className="min-w-0 space-y-1">
+      <span className="text-xs text-muted-foreground">Номинал {index + 1}, ₽</span>
+      <Input
+        inputMode="numeric"
+        value={v}
+        aria-label={`Номинал ${index + 1}, рублей`}
+        aria-invalid={!valid(v) || undefined}
+        onFocus={() => (focused.current = true)}
+        onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+        onChange={(e) => {
+          const raw = e.target.value.replace(/[^\d\s]/g, "")
+          setV(raw)
+          if (valid(raw)) scheduleSave(key, () => save(raw))
+          else cancelSave(key)
+        }}
+        onBlur={() => {
+          focused.current = false
+          flushSave(key)
+          if (!valid(v)) {
+            const cur = getState().giftAmounts[index]
+            setV(String(cur))
+            toast.error(`Номинал ${index + 1}: сумма от ${rub(GIFT_MIN)} до ${rub(GIFT_MAX)}, осталась прежняя — ${rub(cur)}`)
+          }
+        }}
+        className="h-10 rounded-xl tabular-nums"
+      />
+    </label>
+  )
+}
+
+/** Строка под заголовком вкладки: как на «Моей странице» */
+function AutosaveStatus() {
+  const pending = useSavePending()
+  return (
+    <p role="status" aria-live="polite" className={cn("mt-2 text-xs font-medium", pending ? "text-muted-foreground" : "text-emerald-700 dark:text-emerald-400")}>
+      {pending ? "Сохраняю…" : "✓ Всё сохранено — уже на сайте"}
+    </p>
   )
 }
 
@@ -698,34 +810,10 @@ function GiftsTab() {
         <p className="mt-0.5 text-xs text-muted-foreground">
           Три суммы, из которых выбирают покупатели. Любая сумма от {rub(GIFT_MIN)} до {rub(GIFT_MAX)}.
         </p>
+        <AutosaveStatus />
         <div className="mt-3 grid grid-cols-3 gap-2 sm:max-w-md">
           {amounts.map((a, i) => (
-            <label key={i} className="min-w-0 space-y-1">
-              <span className="text-xs text-muted-foreground">Номинал {i + 1}, ₽</span>
-              <Input
-                key={a}
-                inputMode="numeric"
-                defaultValue={a}
-                aria-label={`Номинал ${i + 1}, рублей`}
-                onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                onChange={(e) => {
-                  const clean = e.target.value.replace(/[^\d\s]/g, "")
-                  if (clean !== e.target.value) e.target.value = clean
-                }}
-                onBlur={(e) => {
-                  const raw = e.target.value.replace(/\s/g, "")
-                  if (raw === String(a)) return
-                  const saved = raw ? actions.setGiftAmount(i, Number(raw)) : null
-                  if (saved === null) {
-                    e.target.value = String(a)
-                    toast.error(`Номинал ${i + 1}: сумма от ${rub(GIFT_MIN)} до ${rub(GIFT_MAX)}`)
-                  } else {
-                    toast.success(`Номинал ${i + 1}: ${rub(saved)}`)
-                  }
-                }}
-                className="h-10 rounded-xl tabular-nums"
-              />
-            </label>
+            <AmountField key={i} index={i} amount={a} />
           ))}
         </div>
       </div>

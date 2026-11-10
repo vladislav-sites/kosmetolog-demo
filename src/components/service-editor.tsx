@@ -175,7 +175,7 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
           <X className="size-4" />
         </button>
         <SheetTitle className="font-heading text-xl">{isNew ? "Новая процедура" : "Изменить процедуру"}</SheetTitle>
-        <SheetDescription>Всё, что здесь заполнено, клиентки видят на странице процедуры.</SheetDescription>
+        <SheetDescription>Всё, что здесь заполнено, клиенты видят на странице процедуры.</SheetDescription>
       </SheetHeader>
 
       <div className="space-y-6 px-5 py-5">
@@ -290,8 +290,8 @@ function EditorBody({ service, onClose }: { service?: Service; onClose: () => vo
         </fieldset>
 
         <div className="space-y-4 rounded-2xl border border-border p-4">
-          <Toggle id="svc-active" label="Показывать на сайте" hint="Скрытая процедура не видна клиенткам и недоступна для записи" checked={f.active} onChange={(v) => set("active", v)} />
-          <Toggle id="svc-featured" label="Это консультация" hint="Первый шаг для новых клиенток: на неё ведут кнопки «Записаться на консультацию»" checked={f.featured} onChange={(v) => set("featured", v)} />
+          <Toggle id="svc-active" label="Показывать на сайте" hint="Скрытая процедура не видна клиентам и недоступна для записи" checked={f.active} onChange={(v) => set("active", v)} />
+          <Toggle id="svc-featured" label="Это консультация" hint="Первый шаг для новых клиентов: на сайте подписана «с неё лучше начать», на неё ведёт плашка «Ближайшее окно»" checked={f.featured} onChange={(v) => set("featured", v)} />
         </div>
 
         {!isNew && (
