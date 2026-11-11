@@ -185,7 +185,7 @@ export function ProfileEditor() {
                 value={f.brand ?? ""}
                 maxLength={40}
                 onChange={(e) => update({ brand: e.target.value })}
-                placeholder="Например: Тихая кожа"
+                placeholder="Например: Dew Room"
                 className="h-11 rounded-xl"
               />
             </Field>

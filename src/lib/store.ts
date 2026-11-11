@@ -215,6 +215,8 @@ function migrate(p: AppState): AppState | null {
   if (s.version !== VERSION) return null
   // Сохранённая тема могла быть удалена из шаблона (например, «Аметист») — тогда берём основную
   if (!THEME_IDS.includes(s.theme)) s = { ...s, theme: master.theme }
+  // Демо: студию переименовали «Тихая кожа» → «Dew Room» — у тех, кто уже открывал демо, тоже меняем
+  if (master.demo && s.profile.brand === "Тихая кожа") s = { ...s, profile: { ...s.profile, brand: master.brand } }
   return s
 }
 

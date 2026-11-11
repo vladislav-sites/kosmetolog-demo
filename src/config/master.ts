@@ -9,7 +9,7 @@ import type { MasterConfig } from "./types"
  */
 export const master: MasterConfig = {
   // Название студии — по желанию. Нет названия — убрать строку, на сайте его просто не будет
-  brand: "Тихая кожа",
+  brand: "Dew Room",
   masterName: "Вера Лаврова",
   role: "косметолог-эстетист",
   city: "Казань",
